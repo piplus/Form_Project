@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id         Int          @id @default(autoincrement())
+  name       String       @unique
+  users      User[]
+  formAccess FormAccess[]
+}
+
+model User {
+  id          Int              @id @default(autoincrement())
+  name        String
+  email       String           @unique
+  password    String
+  role        Role             @relation(fields: [roleId], references: [id])
+  roleId      Int
+  submissions FormSubmission[] // ✅ เพิ่มความสัมพันธ์กลับไปยัง FormSubmission
+}
+
+model Form {
+  id          Int              @id @default(autoincrement())
+  file        String           @unique
+  status      String           @default("Pending")
+  questions   Json
+  access      FormAccess[]
+  submissions FormSubmission[] // ✅ เพิ่มความสัมพันธ์กลับไปยัง FormSubmission
+}
+
+model FormAccess {
+  id     Int  @id @default(autoincrement())
+  role   Role @relation(fields: [roleId], references: [id])
+  roleId Int
+  form   Form @relation(fields: [formId], references: [id])
+  formId Int
+
+  @@unique([roleId, formId])
+}
+
+model FormSubmission {
+  id        Int      @id @default(autoincrement())
+  formId    Int
+  userId    Int
+  status    String   @default("Submitted")
+  answers   Json
+  createdAt DateTime @default(now())
+
+  form Form @relation(fields: [formId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+}
