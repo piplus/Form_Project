@@ -103,6 +103,10 @@ export default function ReviewerDashboard() {
       XLSX.writeFile(wb, `${formFile}.xlsx`);
 
       console.log("✅ Exported successfully:", `${formFile}.xlsx`);
+
+      await fetch(`/api/reviewer/forms/${formId}/export-log`, {
+        method: "POST",
+      });
     } catch (error) {
       console.error("❌ Error exporting Excel:", error);
     }
