@@ -123,12 +123,12 @@ export default function FormPage() {
                 <>
                   <label className="block text-lg font-medium text-gray-700">{q.label}</label>
                   {q.type === "text" || q.type === "number" || q.type === "date" ? (
-                    <input
-                      type={q.type}
-                      required
-                      className="w-full p-4 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-700 text-lg"
-                      onChange={(e) => handleChange(q.id, e.target.value)}
-                    />
+                  <input
+                    type={q.type}
+                    required
+                    className="w-full p-4 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-700 text-lg"
+                    onChange={(e) => handleChange(q.id, e.target.value)}
+                  />
                   ) : q.type === "radio" ? (
                     <div className="flex flex-wrap gap-6 mt-2">
                       {q.options.map((option: string) => (
