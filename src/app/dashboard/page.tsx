@@ -72,7 +72,7 @@ export default function DashboardPage() {
             </thead>
             <tbody>
               {forms.map((form) => {
-                const cycleAttempt = ((form.attempt - 1 + 4) % 4) + 1;
+                const cycleAttempt = form.attempt === 0 ? 0 : ((form.attempt - 1 + 4) % 4) + 1;
                 return (
                   <tr key={form.id} className="border-b text-gray-600">
                     <td className="px-4 py-3">

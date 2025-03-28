@@ -23,17 +23,9 @@ export default function FormPage() {
       if (!formId) return;
 
       try {
-        console.log("📌 Fetching form with ID:", formId);
         const res = await fetch(`/api/forms/${formId}`);
         const data = await res.json();
-
-        if (data.error) {
-          console.error("❌ Error fetching form:", data.error);
-          setForm(null);
-        } else {
-          console.log("✅ Form data received:", data);
-          setForm(data);
-        }
+        setForm(data.error ? null : data);
       } catch (error) {
         console.error("❌ Error fetching form:", error);
         setForm(null);
@@ -41,6 +33,7 @@ export default function FormPage() {
         setLoading(false);
       }
     }
+
     fetchForm();
   }, [formId]);
 
@@ -50,16 +43,10 @@ export default function FormPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!session?.user?.id) {
       alert("กรุณาเข้าสู่ระบบก่อนส่งฟอร์ม");
       return;
     }
-
-    console.log("📌 Submitting form...");
-    console.log("📌 Form ID:", formId);
-    console.log("📌 User ID:", session.user.id);
-    console.log("📌 Answers:", answers);
 
     try {
       const res = await fetch(`/api/forms/${formId}/submit`, {
@@ -69,8 +56,6 @@ export default function FormPage() {
       });
 
       const data = await res.json();
-      console.log("📌 Server Response:", data);
-
       if (res.ok) {
         alert("ส่งข้อมูลฟอร์มเรียบร้อยแล้ว ✅");
         router.push("/dashboard");
@@ -82,56 +67,106 @@ export default function FormPage() {
     }
   };
 
-  if (loading) return <p className="text-center mt-10">Loading...</p>;
-  if (!form) return <p className="text-center mt-10 text-red-500">Form not found</p>;
+  if (loading) return <p className="text-center mt-10 text-lg">Loading...</p>;
+  if (!form) return <p className="text-center mt-10 text-red-500 text-lg">Form not found</p>;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-6">
-      <h1 className="text-3xl font-bold text-gray-700">Form: {form.file}</h1>
-      <form className="mt-6 w-full max-w-md bg-white p-6 shadow-md rounded-lg" onSubmit={handleSubmit}>
-        {form?.questions && Array.isArray(form.questions) ? (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-6 py-10">
+      <h1 className="text-4xl font-bold text-gray-800 mb-6">📋 Form: {form.file}</h1>
+
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-3xl bg-white p-8 rounded-xl shadow-lg space-y-6"
+      >
+        {form?.questions?.length > 0 ? (
           form.questions.map((q: any) => (
-            <div key={q.id} className="mb-4">
-              <label className="block text-gray-700">{q.label}</label>
-              {q.type === "text" || q.type === "number" ? (
-                <input
-                  type={q.type}
-                  className="w-full p-3 border rounded-md bg-gray-100 text-gray-500"
-                  required
-                  onChange={(e) => handleChange(q.id, e.target.value)}
-                />
-              ) : q.type === "radio" ? (
-                <div className="mt-2">
-                  {q.options.map((option: string) => (
-                    <label key={option} className="inline-flex items-center space-x-2 mr-4">
-                      <input
-                        type="radio"
-                        name={q.id}
-                        value={option}
-                        className="mr-2"
-                        onChange={() => handleChange(q.id, option)}
-                      />
-                      <span>{option}</span>
-                    </label>
+            <div key={q.id} className="space-y-2">
+              {q.type === "group" ? (
+                <fieldset className="border border-gray-300 p-4 rounded-md">
+                  <legend className="text-lg font-semibold text-gray-700">{q.label}</legend>
+                  {q.children?.map((qChild: any) => (
+                    <div key={qChild.id} className="mt-4">
+                      <label className="block text-md font-medium text-gray-600 mb-1">
+                        {qChild.label}
+                      </label>
+
+                      {qChild.type === "radio" ? (
+                        <div className="flex flex-wrap gap-6 mt-2">
+                          {qChild.options.map((option: string) => (
+                            <label
+                              key={option}
+                              className="inline-flex items-center text-md text-gray-600"
+                            >
+                              <input
+                                type="radio"
+                                name={qChild.id} // ✅ ใช้ id ที่ถูกต้องของฟิลด์ย่อย
+                                value={option}
+                                className="mr-2"
+                                onChange={() => handleChange(qChild.id, option)}
+                              />
+                              {option}
+                            </label>
+                          ))}
+                        </div>
+                      ) : (
+                        <input
+                          type={qChild.type || "text"}
+                          required
+                          className="w-full p-3 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-700 text-md"
+                          onChange={(e) => handleChange(qChild.id, e.target.value)}
+                        />
+                      )}
+                    </div>
                   ))}
-                </div>
-              ) : null}
+                </fieldset>
+              ) : (
+                <>
+                  <label className="block text-lg font-medium text-gray-700">{q.label}</label>
+                  {q.type === "text" || q.type === "number" ? (
+                    <input
+                      type={q.type}
+                      required
+                      className="w-full p-4 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-700 text-lg"
+                      onChange={(e) => handleChange(q.id, e.target.value)}
+                    />
+                  ) : q.type === "radio" ? (
+                    <div className="flex flex-wrap gap-6 mt-2">
+                      {q.options.map((option: string) => (
+                        <label key={option} className="inline-flex items-center text-lg text-gray-600">
+                          <input
+                            type="radio"
+                            name={q.id}
+                            value={option}
+                            className="mr-2"
+                            onChange={() => handleChange(q.id, option)}
+                          />
+                          {option}
+                        </label>
+                      ))}
+                    </div>
+                  ) : null}
+                </>
+              )}
             </div>
           ))
         ) : (
-          <p className="text-red-500">No questions available</p>
+          <p className="text-red-500 text-lg">No questions available</p>
         )}
-        <button type="submit" className="w-full p-3 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-          Submit
+
+
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white text-lg py-3 rounded-md hover:bg-blue-700 transition shadow-md"
+        >
+          Submit Form
         </button>
       </form>
 
-      {/* ✅ ปุ่มกลับไปหน้า Dashboard */}
       <button
         onClick={() => router.push("/dashboard")}
-        className="mt-4 px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+        className="mt-6 px-6 py-3 text-lg bg-gray-500 text-white rounded-md hover:bg-gray-600 transition"
       >
-        Back to Dashboard
+        ⬅ Back to Dashboard
       </button>
     </div>
   );
