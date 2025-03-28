@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter,useSearchParams} from "next/navigation";
 import { useSession } from "next-auth/react";
+
+
 
 export default function FormPage() {
   const { formId } = useParams();
@@ -11,6 +13,9 @@ export default function FormPage() {
   const [form, setForm] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [answers, setAnswers] = useState<{ [key: string]: string }>({});
+
+  const searchParams = useSearchParams();
+  const quarter = searchParams.get("quarter");
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -52,7 +57,7 @@ export default function FormPage() {
       const res = await fetch(`/api/forms/${formId}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: session.user.id, answers }),
+        body: JSON.stringify({ userId: session.user.id, answers , quarter}),
       });
 
       const data = await res.json();

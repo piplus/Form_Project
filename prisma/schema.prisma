@@ -49,10 +49,10 @@ model FormSubmission {
   id              Int      @id @default(autoincrement())
   formId          Int
   userId          Int
-  status          String   @default("Submitted") // Submitted | Updated | Completed
+  quarter         Int      // ✅ ระบุไตรมาส (1–4)
+  status          String   @default("Submitted")
   answers         Json
-  attempt         Int      @default(1) // จำนวนครั้งที่กรอก
-  lastSubmittedAt DateTime @default(now()) // วันที่ล่าสุดที่กรอก
+  lastSubmittedAt DateTime @default(now())
   createdAt       DateTime @default(now())
 
   form Form @relation(fields: [formId], references: [id])

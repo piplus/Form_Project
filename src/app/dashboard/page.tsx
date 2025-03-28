@@ -8,8 +8,7 @@ interface FormData {
   id: number;
   file: string;
   description?: string;
-  status: string;
-  attempt: number;
+  submittedQuarters: number[];
 }
 
 export default function DashboardPage() {
@@ -17,30 +16,38 @@ export default function DashboardPage() {
   const router = useRouter();
   const [forms, setForms] = useState<FormData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedFormId, setSelectedFormId] = useState<number | null>(null);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login");
-    }
+    if (status === "unauthenticated") router.push("/login");
   }, [status, router]);
 
   useEffect(() => {
     async function fetchForms() {
       if (!session?.user?.id) return;
-
-      try {
-        const res = await fetch(`/api/forms?userId=${session.user.id}`);
-        const data = await res.json();
-        setForms(data.error ? [] : data);
-      } catch (error) {
-        console.error("❌ Error loading forms:", error);
-      } finally {
-        setLoading(false);
-      }
+      const res = await fetch(`/api/forms?userId=${session.user.id}`);
+      const data = await res.json();
+      const sorted = [...data].sort((a, b) =>
+        a.file.localeCompare(b.file, undefined, { numeric: true })
+      );
+      setForms(data.error ? [] : sorted);
+      setLoading(false);
     }
 
     if (status === "authenticated") fetchForms();
   }, [session, status]);
+
+  const handleOpenModal = (formId: number) => {
+    setSelectedFormId(formId);
+    setShowModal(true);
+  };
+
+  const handleSelectQuarter = (quarter: number) => {
+    if (selectedFormId) {
+      router.push(`/form/${selectedFormId}?quarter=${quarter}`);
+    }
+  };
 
   if (loading) return <p className="text-center mt-10">Loading...</p>;
 
@@ -66,55 +73,59 @@ export default function DashboardPage() {
             <thead>
               <tr className="bg-gray-200">
                 <th className="px-4 py-3 text-left text-gray-800">File</th>
-                <th className="px-4 py-3 text-left text-gray-800">Status</th>
+                <th className="px-4 py-3 text-left text-gray-800">Progress</th>
                 <th className="px-4 py-3 text-left text-gray-800">Select Form</th>
               </tr>
             </thead>
             <tbody>
-              {forms.map((form) => {
-                const cycleAttempt = form.attempt === 0 ? 0 : ((form.attempt - 1 + 4) % 4) + 1;
-                return (
-                  <tr key={form.id} className="border-b text-gray-600">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2 font-medium text-black relative group">
-                        {form.file}
-
-                        {form.description && (
-                          <div className="relative">
-                            <img
-                              src="https://cdn-icons-png.flaticon.com/128/11560/11560440.png"
-                              alt="hint"
-                              width={20}
-                              className="cursor-pointer"
-                            />
-                            <div className="absolute z-10 top-6 left-0 w-64 p-3 bg-white border border-gray-300 rounded-md shadow-lg text-sm text-gray-800 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                              {form.description}
-                            </div>
+              {forms.map((form) => (
+                <tr key={form.id} className="border-b text-gray-600">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2 font-medium text-black relative group">
+                      {form.file}
+                      {form.description && (
+                        <div className="relative">
+                          <img
+                            src="https://cdn-icons-png.flaticon.com/128/11560/11560440.png"
+                            alt="hint"
+                            width={20}
+                            className="cursor-pointer"
+                          />
+                          <div className="absolute z-10 top-6 left-0 w-64 p-3 bg-white border border-gray-300 rounded-md shadow-lg text-sm text-gray-800 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            {form.description}
                           </div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="text-sm mb-1">{form.status}</div>
-                      <div className="w-full bg-gray-200 rounded-full h-3">
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex gap-2">
+                      {[1, 2, 3, 4].map((q) => (
                         <div
-                          className="bg-green-500 h-3 rounded-full transition-all"
-                          style={{ width: `${(cycleAttempt / 4) * 100}%` }}
+                          key={q}
+                          className={`w-6 h-6 rounded-full ${
+                            form.submittedQuarters?.includes(q)
+                              ? "bg-green-500"
+                              : "bg-gray-300"
+                          }`}
+                          title={`Quarter ${q}`}
                         />
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">{cycleAttempt} / 4 times</div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <button
-                        onClick={() => router.push(`/form/${form.id}`)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                      >
-                        Select
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+                      ))}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Submitted: {(form.submittedQuarters ?? []).join(", ") || "None"}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() => handleOpenModal(form.id)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    >
+                      Select Form
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -123,6 +134,45 @@ export default function DashboardPage() {
           ไม่มีฟอร์มที่คุณสามารถเข้าถึงได้
         </p>
       )}
+
+  {showModal && selectedFormId && (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl shadow-xl w-96 p-6 text-center animate-fadeIn">
+        <h2 className="text-xl font-bold text-gray-800 mb-4">เลือกไตรมาสที่จะกรอก</h2>
+
+        <div className="grid grid-cols-2 gap-4">
+          {[1, 2, 3, 4].map((q) => {
+            const form = forms.find((f) => f.id === selectedFormId);
+            const isSubmitted = form?.submittedQuarters.includes(q);
+
+            return (
+              <button
+                key={q}
+                onClick={() => handleSelectQuarter(q)}
+                className={`flex flex-col items-center justify-center p-4 rounded-lg border text-sm font-medium transition-all duration-200
+                  ${isSubmitted
+                    ? "bg-green-100 text-green-700 hover:bg-green-200"
+                    : "bg-blue-100 text-blue-700 hover:bg-blue-500 hover:text-white"}
+                `}
+              >
+                <span className="text-lg font-semibold">Quarter {q}</span>
+                {isSubmitted && <span className="text-xs mt-1">เคยส่งแล้ว ✅</span>}
+              </button>
+            );
+          })}
+        </div>
+
+        <button
+          onClick={() => setShowModal(false)}
+          className="mt-6 inline-block text-sm text-gray-500 hover:underline"
+        >
+          ❌ ยกเลิก
+        </button>
+      </div>
+    </div>
+  )}
+
+
     </div>
   );
 }

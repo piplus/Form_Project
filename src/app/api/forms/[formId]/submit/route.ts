@@ -6,40 +6,34 @@ const prisma = new PrismaClient();
 export async function POST(req: Request, context: { params: { formId: string } }) {
   try {
     const formId = parseInt(context.params.formId, 10);
-    const { userId, answers } = await req.json();
+    const { userId, answers, quarter } = await req.json();
+    console.log("🧪 userId:", userId);
+    console.log("🧪 answers:", answers);
+    console.log("🧪 quarter:", quarter);
+    console.log("🧪 formId:", formId);
 
-    if (!userId || !answers || isNaN(formId)) {
+    if (!userId || !answers || !quarter || isNaN(formId)) {
       return NextResponse.json({ error: "Missing or invalid data" }, { status: 400 });
     }
 
-    // ✅ ตรวจสอบว่าฟอร์มมีอยู่จริง
     const form = await prisma.form.findUnique({ where: { id: formId } });
     if (!form) {
       return NextResponse.json({ error: "Form not found" }, { status: 404 });
     }
 
-    // ✅ หา submission ล่าสุดของ user นี้ → เพื่อดูว่า attempt ล่าสุดคือเท่าไหร่
-    const latest = await prisma.formSubmission.findFirst({
-      where: { formId, userId: Number(userId) },
-      orderBy: { createdAt: "desc" },
-    });
-
-    const nextAttempt = latest ? latest.attempt + 1 : 1;
-
-    // ✅ เพิ่ม Row ใหม่ทุกครั้ง
-    const created = await prisma.formSubmission.create({
+    const submission = await prisma.formSubmission.create({
       data: {
         formId,
         userId: Number(userId),
+        quarter: Number(quarter),
         answers,
-        attempt: nextAttempt,
-        status: nextAttempt >= 4 ? "Completed" : latest ? "Updated" : "Submitted",
+        status: "Submitted",
         lastSubmittedAt: new Date(),
       },
     });
 
-    console.log("📌 New submission row created:", created);
-    return NextResponse.json({ message: "Form submitted successfully", submission: created });
+    console.log("📌 New submission row created:", submission);
+    return NextResponse.json({ message: "Form submitted successfully", submission });
 
   } catch (error) {
     console.error("❌ Error submitting form:", error);

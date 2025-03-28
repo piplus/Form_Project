@@ -21,17 +21,17 @@ export async function GET() {
 
   const result = await Promise.all(
     formAccess.map(async (access) => {
-      const latestSubmission = await prisma.formSubmission.findFirst({
+      const allSubmissions = await prisma.formSubmission.findMany({
         where: { formId: access.formId, userId },
-        orderBy: { createdAt: "desc" },
       });
+
+      const submittedQuarters = [...new Set(allSubmissions.map((s) => s.quarter))];
 
       return {
         id: access.form.id,
         file: access.form.file,
-        description: access.form.description, // ✅ ใส่ description มาด้วย
-        status: latestSubmission?.status || "Pending",
-        attempt: latestSubmission?.attempt || 0,
+        description: access.form.description,
+        submittedQuarters,
       };
     })
   );
