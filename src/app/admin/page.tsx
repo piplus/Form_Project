@@ -138,38 +138,43 @@ export default function AdminDashboard() {
                 <tr key={role.id} className="border-b">
                   <td className="px-4 py-3 text-gray-500">{role.name}</td>
                   <td className="px-4 py-3 text-gray-500">
-                    {Array.isArray(formAccess) &&
-                      formAccess
-                        .filter((fa) => fa.role.id === role.id)
-                        .map((fa) => (
-                          <span key={fa.form.id} className="mr-2 p-1 bg-blue-200 rounded inline-flex items-center">
-                            {fa.form.file}
-                            <button
-                              onClick={() => revokeAccess(role.id, fa.form.id)}
-                              className="ml-2 text-red-500 hover:text-red-700"
-                            >
-                              ✖
-                            </button>
-                          </span>
-                        ))}
+                  <div className="flex flex-wrap gap-2">
+                    {formAccess
+                      .filter((fa) => fa.role.id === role.id)
+                      .sort((a, b) => a.form.file.localeCompare(b.form.file, undefined, { numeric: true }))
+                      .map((fa) => (
+                        <span
+                          key={fa.form.id}
+                          className="bg-blue-200 rounded-full px-3 py-1 inline-flex items-center text-sm"
+                        >
+                          {fa.form.file}
+                          <button
+                            onClick={() => revokeAccess(role.id, fa.form.id)}
+                            className="ml-2 text-red-500 hover:text-red-700"
+                          >
+                            ✖
+                          </button>
+                        </span>
+                      ))}
+                  </div>
                   </td>
                   <td className="px-4 py-3">
-                    <select
-                      onChange={(e) => grantAccess(role.id, Number(e.target.value))}
-                      className="border p-2 rounded-md text-gray-500"
-                    >
-                      <option value="">เลือก Form</option>
-                      {Array.isArray(forms) && forms.length > 0 ? (
-                        forms.map((form) => (
-                          <option key={form.id} value={form.id}>
-                            {form.file}
-                          </option>
-                        ))
-                      ) : (
-                        <option disabled>ไม่มีฟอร์มให้เลือก</option>
-                      )}
-                    </select>
+                  <select
+                    onChange={(e) => grantAccess(role.id, Number(e.target.value))}
+                    className="border p-2 rounded-md text-gray-500 w-full min-w-[180px]"
+                  >
+                    <option value="">เลือก Form</option>
+                    {forms
+                      .filter((form) => !formAccess.some((fa) => fa.role.id === role.id && fa.form.id === form.id))
+                      .sort((a, b) => a.file.localeCompare(b.file, undefined, { numeric: true }))
+                      .map((form) => (
+                        <option key={form.id} value={form.id}>
+                          {form.file}
+                        </option>
+                      ))}
+                  </select>
                   </td>
+
                 </tr>
               ))}
           </tbody>

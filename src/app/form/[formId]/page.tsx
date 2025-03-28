@@ -122,7 +122,7 @@ export default function FormPage() {
               ) : (
                 <>
                   <label className="block text-lg font-medium text-gray-700">{q.label}</label>
-                  {q.type === "text" || q.type === "number" ? (
+                  {q.type === "text" || q.type === "number" || q.type === "date" ? (
                     <input
                       type={q.type}
                       required
