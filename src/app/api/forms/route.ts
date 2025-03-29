@@ -13,6 +13,7 @@ export async function GET() {
 
   const userId = parseInt(session.user.id);
   const role = session.user.role;
+  const currentYear = new Date().getFullYear();
 
   const formAccess = await prisma.formAccess.findMany({
     where: { role: { name: role } },
@@ -21,17 +22,22 @@ export async function GET() {
 
   const result = await Promise.all(
     formAccess.map(async (access) => {
-      const allSubmissions = await prisma.formSubmission.findMany({
-        where: { formId: access.formId, userId },
+      const submissions = await prisma.formSubmission.findMany({
+        where: {
+          formId: access.form.id,
+          userId,
+          year: currentYear, // ✅ เฉพาะปีนี้เท่านั้น
+        },
+        select: {
+          quarter: true,
+        },
       });
-
-      const submittedQuarters = [...new Set(allSubmissions.map((s) => s.quarter))];
 
       return {
         id: access.form.id,
         file: access.form.file,
         description: access.form.description,
-        submittedQuarters,
+        submittedQuarters: submissions.map((s) => s.quarter),
       };
     })
   );

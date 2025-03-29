@@ -7,10 +7,13 @@ export async function POST(req: Request, context: { params: { formId: string } }
   try {
     const formId = parseInt(context.params.formId, 10);
     const { userId, answers, quarter } = await req.json();
+    const year = new Date().getFullYear();
+
     console.log("🧪 userId:", userId);
     console.log("🧪 answers:", answers);
     console.log("🧪 quarter:", quarter);
     console.log("🧪 formId:", formId);
+    console.log("🧪 year:", year);
 
     if (!userId || !answers || !quarter || isNaN(formId)) {
       return NextResponse.json({ error: "Missing or invalid data" }, { status: 400 });
@@ -26,6 +29,7 @@ export async function POST(req: Request, context: { params: { formId: string } }
         formId,
         userId: Number(userId),
         quarter: Number(quarter),
+        year, // ✅ ระบุปีปัจจุบัน
         answers,
         status: "Submitted",
         lastSubmittedAt: new Date(),

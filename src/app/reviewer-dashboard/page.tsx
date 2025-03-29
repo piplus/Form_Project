@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import * as XLSX from "xlsx";
+import Image from "next/image";
 
 interface Form {
   id: number;
@@ -115,7 +116,22 @@ export default function ReviewerDashboard() {
   return (
     <div className="min-h-screen p-10 bg-gray-100">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <nav className="bg-gray-200 shadow px-6 py-3 flex justify-between items-center rounded-lg mb-6">
+              <div className="flex items-center gap-2">
+                <Image src="/weblogo2.png" alt="E-Kept Logo" width={200} height={0} />
+                {/* <span className="text-xl font-bold text-gray-800">E-Kept</span> */}
+                <h1 className="text-3xl font-bold text-gray-700">Reviewer Dashboard</h1>
+              </div>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => signOut({ callbackUrl: "/login" })}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                >
+                  Logout
+                </button>
+              </div>
+            </nav>
+      {/* <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Reviewer Dashboard</h1>
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
@@ -123,7 +139,7 @@ export default function ReviewerDashboard() {
         >
           Logout
         </button>
-      </div>
+      </div> */}
 
       {/* Search */}
       <div className="mb-6">

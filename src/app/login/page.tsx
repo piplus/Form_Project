@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Image from "next/image"; // 👈 เพิ่มบรรทัดนี้
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -56,11 +57,16 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen">
       {/* Left Section */}
-      <div className="hidden lg:flex flex-col justify-center items-center w-1/2 bg-gray-800 text-white p-10">
-        <h1 className="text-3xl font-bold">Welcome to Website</h1>
-        <p className="mt-4 text-gray-300">Login System</p>
+      <div className="hidden lg:flex flex-col items-center justify-center w-1/2 bg-gray-200 p-10">
+        <Image
+          src="/weblogo.png"
+          alt="E-Kept Logo"
+          width={500}
+          height={500}
+          className="object-contain mb-4"
+        />
       </div>
-
+      
       {/* Right Section */}
       <div className="flex flex-col justify-center items-center bg-white w-full lg:w-1/2 p-10">
         <h2 className="text-2xl font-semibold text-gray-700 mb-6">Login</h2>
