@@ -17,25 +17,29 @@ export async function GET(req: Request, { params }: { params: { formId: string }
     const form = await prisma.form.findUnique({
       where: { id: formId },
       include: {
-        submissions: true,
+        submissions: {
+          include: { user: true },
+          where: {
+            // ดึง submission ทั้งหมด (ไม่มีเงื่อนไขเพิ่ม)
+          },
+        },
       },
     });
 
     if (!form) {
-      console.error("❌ Form not found");
       return NextResponse.json({ error: "Form not found" }, { status: 404 });
     }
 
     console.log("✅ Form Data:", form);
 
-    const questions = JSON.parse(form.questions as any);
-    const responses = form.submissions.map((submission) => ({
+    const questions = JSON.parse(form.questions as string || "[]"); // ป้องกัน null
+    const responses = form.submissions?.map((submission) => ({
       id: submission.id,
       userId: submission.userId,
       status: submission.status,
-      answers: JSON.stringify(submission.answers), // 🔥 แก้ JSON
+      answers: JSON.stringify(submission.answers),
       createdAt: submission.createdAt,
-    }));
+    })) || []; // ป้องกัน undefined
 
     console.log("✅ Questions:", questions);
     console.log("✅ Responses:", responses);

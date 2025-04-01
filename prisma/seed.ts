@@ -502,7 +502,7 @@ async function main() {
     },
     {
       "file": "KPI 1.3 คณะ",
-      "description": "นักศึกษามีศักยภาพในการใช้เทคโนโลยีสารสนเทศ สอดคล้องกับมาตรฐานวิชาชีพ เช่น CAD/CAM, SOLIDWORKS, Autodesk Inventor, CST Microwave studio, Cisco Network Certified, AWS Cloud Certified,Fortinet Cyber Security Certified  เป็นต้น",
+      "description": "นักศึกษามีศักยภาพในการใช้เทคโนโลยีสารสนเทศ สอดคล้องกับมาตรฐานวิชาชีพ เช่น CAD/CAM, SOLIDWORKS, Autodesk Inventor, CST Microwave studio, Cisco Network Certified, AWS Cloud Certified, Fortinet Cyber Security Certified เป็นต้น",
       "questions": JSON.stringify([
         { "id": "q1", "label": "รหัสนักศึกษา", "type": "text" },
         { "id": "q2", "label": "ชื่อ - นามสกุล", "type": "text" },
@@ -518,13 +518,18 @@ async function main() {
             { "id": "q5_2", "label": "สถานที่/หน่วยงานที่จัด", "type": "text" },
             { "id": "q5_3", "label": "เกณฑ์การผ่าน", "type": "text" },
             { "id": "q5_4", "label": "ผลการสอบ", "type": "text" },
-            { "id": "q5_5", "label": "ผลการประเมิน (ผ่าน/ไม่ผ่าน)", "type": "text" },
+            {
+              "id": "q5_5",
+              "label": "ผลการประเมิน",
+              "type": "radio",
+              "options": ["ผ่าน", "ไม่ผ่าน"]
+            },
             { "id": "q5_6", "label": "วัน/เดือน/ปี ที่ผ่านการประเมิน / Certificate", "type": "date" }
           ]
         },
     
         { "id": "q6", "label": "ช่วงเวลาการจัดเก็บข้อมูล (ไตรมาส 1,2,3,4)", "type": "text" }
-      ]),
+      ])
     },
     {
       "file": "RT KPI 1.4 คณะ",
@@ -539,20 +544,14 @@ async function main() {
         {
           "id": "q6",
           "label": "ประเภทการสอบตามมาตรฐานสากล",
-          "type": "group",
-          "children": [
-            { "id": "q6_1", "label": "TOEIC", "type": "checkbox" },
-            { "id": "q6_2", "label": "TOEFL", "type": "checkbox" },
-            { "id": "q6_3", "label": "IELTS", "type": "checkbox" },
-            { "id": "q6_4", "label": "RT-TEP", "type": "checkbox" },
-            { "id": "q6_5", "label": "อื่น ๆ (Etc.)", "type": "checkbox" }
-          ]
+          "type": "radio",
+          "options": ["TOEIC", "TOEFL", "IELTS", "RT-TEP", "อื่น ๆ (Etc.)"]
         },
     
         { "id": "q7", "label": "คะแนนที่ได้", "type": "text" },
         { "id": "q8", "label": "วัน/เดือน/ปี ที่ผ่านการประเมิน", "type": "date" },
         { "id": "q9", "label": "ช่วงเวลาการจัดเก็บข้อมูล (ไตรมาส 1,2,3,4)", "type": "text" }
-      ]),
+      ])
     },
     {
       "file": "RT KPI 1.5 คณะ",

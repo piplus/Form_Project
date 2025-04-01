@@ -5,15 +5,18 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const url = new URL(req.url); // ✅ อ่าน query param
+  const yearParam = url.searchParams.get("year");
+  const targetYear = parseInt(yearParam || "") || new Date().getFullYear(); // fallback ปีปัจจุบัน
+
   const userId = parseInt(session.user.id);
   const role = session.user.role;
-  const currentYear = new Date().getFullYear();
 
   const formAccess = await prisma.formAccess.findMany({
     where: { role: { name: role } },
@@ -26,18 +29,18 @@ export async function GET() {
         where: {
           formId: access.form.id,
           userId,
-          year: currentYear, // ✅ เฉพาะปีนี้เท่านั้น
         },
         select: {
+          year: true,
           quarter: true,
         },
       });
-
+  
       return {
         id: access.form.id,
         file: access.form.file,
         description: access.form.description,
-        submittedQuarters: submissions.map((s) => s.quarter),
+        submissions,
       };
     })
   );

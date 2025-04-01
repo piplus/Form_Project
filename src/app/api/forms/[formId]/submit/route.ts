@@ -6,8 +6,8 @@ const prisma = new PrismaClient();
 export async function POST(req: Request, context: { params: { formId: string } }) {
   try {
     const formId = parseInt(context.params.formId, 10);
-    const { userId, answers, quarter } = await req.json();
-    const year = new Date().getFullYear();
+    // const { userId, answers, quarter } = await req.json();
+    const { userId, answers, quarter, year } = await req.json();
 
     console.log("🧪 userId:", userId);
     console.log("🧪 answers:", answers);
@@ -15,7 +15,11 @@ export async function POST(req: Request, context: { params: { formId: string } }
     console.log("🧪 formId:", formId);
     console.log("🧪 year:", year);
 
-    if (!userId || !answers || !quarter || isNaN(formId)) {
+    // if (!userId || !answers || !quarter || isNaN(formId)) {
+    //   return NextResponse.json({ error: "Missing or invalid data" }, { status: 400 });
+    // }
+
+    if (!userId || !answers || !quarter || !year || isNaN(formId)) {
       return NextResponse.json({ error: "Missing or invalid data" }, { status: 400 });
     }
 

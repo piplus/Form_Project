@@ -1,44 +1,39 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter,useSearchParams} from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-
-
 
 export default function FormPage() {
   const { formId } = useParams();
   const { data: session, status } = useSession();
   const router = useRouter();
+
   const [form, setForm] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [answers, setAnswers] = useState<{ [key: string]: string }>({});
+  const [answers, setAnswers] = useState<{ [key: string]: string | string[] }>({});
 
   const searchParams = useSearchParams();
-  const quarter = searchParams.get("quarter");
+  const quarter = Number(searchParams.get("quarter"));
+  const year = Number(searchParams.get("year")) || new Date().getFullYear(); // fallback year
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login");
-    }
-  }, [status, router]);
+    if (status === "unauthenticated") router.push("/login");
+  }, [status]);
 
   useEffect(() => {
     async function fetchForm() {
       if (!formId) return;
-
       try {
         const res = await fetch(`/api/forms/${formId}`);
         const data = await res.json();
         setForm(data.error ? null : data);
-      } catch (error) {
-        console.error("❌ Error fetching form:", error);
-        setForm(null);
+      } catch (err) {
+        console.error("❌ Error fetching form:", err);
       } finally {
         setLoading(false);
       }
     }
-
     fetchForm();
   }, [formId]);
 
@@ -57,7 +52,7 @@ export default function FormPage() {
       const res = await fetch(`/api/forms/${formId}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: session.user.id, answers , quarter}),
+        body: JSON.stringify({ userId: session.user.id, answers, quarter, year }),
       });
 
       const data = await res.json();
@@ -113,6 +108,23 @@ export default function FormPage() {
                             </label>
                           ))}
                         </div>
+                      ) : q.type === "text" ? (
+                        <input
+                          type={qChild.type || "text"}
+                          required
+                          className="w-full p-3 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-700 text-md"
+                          onChange={(e) => handleChange(qChild.id, e.target.value)}
+                        />
+                      ) : qChild.type === "checkbox" ? (
+                        // <label className="flex items-center gap-2 text-md text-gray-700">
+                          <input
+                            type="checkbox"
+                            className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            onChange={(e) => handleChange(qChild.id, e.target.checked ? e.target.value : "")}
+                            value="checked"
+                          />
+                          // {qChild.label}
+                        // </label>
                       ) : (
                         <input
                           type={qChild.type || "text"}
@@ -135,21 +147,65 @@ export default function FormPage() {
                     onChange={(e) => handleChange(q.id, e.target.value)}
                   />
                   ) : q.type === "radio" ? (
-                    <div className="flex flex-wrap gap-6 mt-2">
+                    <div className="flex flex-wrap gap-6 mt-2 text-gray-700">
                       {q.options.map((option: string) => (
-                        <label key={option} className="inline-flex items-center text-lg text-gray-600">
+                        <div key={option} className="flex items-center gap-2">
                           <input
                             type="radio"
                             name={q.id}
                             value={option}
-                            className="mr-2"
-                            onChange={() => handleChange(q.id, option)}
+                            onChange={(e) => {
+                              handleChange(q.id, e.target.value);
+                              if (option === "อื่น ๆ (Etc.)") {
+                                handleChange(`${q.id}_etc`, ""); // prepare empty value
+                              }
+                            }}
+                            checked={answers[q.id] === option}
                           />
-                          {option}
-                        </label>
+                          <label>{option}</label>
+                  
+                          {/* ถ้าเลือก "อื่น ๆ (Etc.)" ให้แสดง Textbox */}
+                          {answers[q.id] === "อื่น ๆ (Etc.)" && option === "อื่น ๆ (Etc.)" && (
+                            <input
+                              type="text"
+                              placeholder="กรุณาระบุ"
+                              className="ml-2 p-2 border rounded"
+                              onChange={(e) => handleChange(`${q.id}_etc`, e.target.value)}
+                            />
+                          )}
+                        </div>
                       ))}
                     </div>
+                  ) : q.type === "checkbox" ? (
+                    <div className="flex flex-wrap gap-6 mt-2">
+                      {q.options.map((option: string) => {
+                        const selected = (answers[q.id] as string[])?.includes(option) ?? false;
+                  
+                        return (
+                          <label key={option} className="inline-flex items-center text-lg text-gray-600">
+                            <input
+                              type="checkbox"
+                              value={option}
+                              checked={selected}
+                              onChange={() =>
+                                setAnswers((prev) => {
+                                  const current = (prev[q.id] as string[]) ?? [];
+                                  const updated = selected
+                                    ? current.filter((val) => val !== option)
+                                    : [...current, option];
+                                  return { ...prev, [q.id]: updated };
+                                })
+                              }
+                              className="mr-2"
+                            />
+                            {option}
+                          </label>
+                        );
+                      })}
+                    </div>
                   ) : null}
+                  
+                  
                 </>
               )}
             </div>

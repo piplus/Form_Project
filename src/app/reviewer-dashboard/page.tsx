@@ -16,6 +16,8 @@ interface SubmissionResponse {
   user: string;
   email: string;
   createdAt: string;
+  quarter: number;
+  year: number,
   answers: string;
 }
 
@@ -69,31 +71,52 @@ export default function ReviewerDashboard() {
       const data: FormSubmissionData = await res.json();
       const { questions, responses } = data;
 
-      const formattedResponses = responses.map((response) => {
-        const parsedAnswers =
-          typeof response.answers === "string"
-            ? JSON.parse(response.answers || "{}")
-            : response.answers || {};
+      const formattedResponses = responses.length > 0
+        ? responses.map((response) => {
+            const parsedAnswers = typeof response.answers === "string"
+              ? JSON.parse(response.answers || "{}")
+              : response.answers || {};
 
-        const mappedAnswers: { [key: string]: string } = {};
+            const mappedAnswers: { [key: string]: string } = {};
 
-        questions.forEach((q) => {
-          if (q.type === "group" && Array.isArray(q.children)) {
-            q.children.forEach((child) => {
-              mappedAnswers[child.label] = parsedAnswers[child.id] || "";
+            questions.forEach((q) => {
+              if (q.type === "group" && Array.isArray(q.children)) {
+                q.children.forEach((child) => {
+                  mappedAnswers[child.label] = parsedAnswers[child.id] || "";
+                });
+              } else {
+                mappedAnswers[q.label] = parsedAnswers[q.id] || "";
+              }
             });
-          } else {
-            mappedAnswers[q.label] = parsedAnswers[q.id] || "";
-          }
-        });
 
-        return {
-          "User Name": response.user,
-          "User Email": response.email,
-          "Submitted At": new Date(response.createdAt).toLocaleString(),
-          ...mappedAnswers,
-        };
-      });
+            return {
+              "User Name": response.user,
+              "User Email": response.email,
+              "Submitted At": new Date(response.createdAt).toLocaleString(),
+              "Quarter": `Q${response.quarter}`,
+              "Year": response.year,
+              ...mappedAnswers,
+            };
+          })
+        : [
+            {
+              "User Name": "",
+              "User Email": "",
+              "Submitted At": "",
+              "Quarter": "",
+              "Year": "",
+              ...questions.reduce((acc, q) => {
+                if (q.type === "group" && Array.isArray(q.children)) {
+                  q.children.forEach((child) => {
+                    acc[child.label] = "";
+                  });
+                } else {
+                  acc[q.label] = "";
+                }
+                return acc;
+              }, {} as Record<string, string>),
+            },
+          ];
 
       const sheet = XLSX.utils.json_to_sheet(formattedResponses);
       const wb = XLSX.utils.book_new();

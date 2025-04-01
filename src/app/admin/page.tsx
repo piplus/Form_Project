@@ -15,6 +15,7 @@ export default function AdminDashboard() {
   const [formAccess, setFormAccess] = useState<any[]>([]);
   const [selectedForms, setSelectedForms] = useState<{ [roleId: number]: number[] }>({});
   // const [selectedForms, setSelectedForms] = useState<{ [roleId: number]: number[] }>({});
+  const [hoverTimeouts, setHoverTimeouts] = useState<{ [key: number]: NodeJS.Timeout | null }>({});
   const [dropdownOpen, setDropdownOpen] = useState<{ [roleId: number]: boolean }>({});
   const [loading, setLoading] = useState(true);
 
@@ -146,7 +147,7 @@ export default function AdminDashboard() {
           <thead>
             <tr className="bg-gray-200">
               <th className="px-4 py-3 text-left text-gray-700">Role</th>
-              <th className="px-4 py-3 text-left text-gray-700">Forms</th>
+              <th className="px-4 py-3 text-left text-gray-700 w-400">Forms</th>
               <th className="px-4 py-3 text-left text-gray-700">Assign Form</th>
             </tr>
           </thead>
@@ -181,7 +182,19 @@ export default function AdminDashboard() {
                     </div>
                   </td>
                   <td className="px-4 py-3 relative">
-                    <div className="relative">
+                    <div
+                      className="relative"
+                      onMouseEnter={() => {
+                        if (hoverTimeouts[role.id]) clearTimeout(hoverTimeouts[role.id]!);
+                        setDropdownOpen((prev) => ({ ...prev, [role.id]: true }));
+                      }}
+                      onMouseLeave={() => {
+                        const timeout = setTimeout(() => {
+                          setDropdownOpen((prev) => ({ ...prev, [role.id]: false }));
+                        }, 150); // 150ms delay
+                        setHoverTimeouts((prev) => ({ ...prev, [role.id]: timeout }));
+                      }}
+                    >
                       <button
                         onClick={() =>
                           setDropdownOpen((prev) => ({
@@ -189,7 +202,7 @@ export default function AdminDashboard() {
                             [role.id]: !prev[role.id],
                           }))
                         }
-                        className="w-full border p-2 rounded-md bg-white text-left"
+                        className="w-70 border p-2 rounded-md bg-white text-left"
                       >
                         {selectedForms[role.id]?.length > 0
                           ? `เลือกแล้ว ${selectedForms[role.id].length} ฟอร์ม`
@@ -197,7 +210,7 @@ export default function AdminDashboard() {
                       </button>
 
                       {dropdownOpen[role.id] && (
-                        <div className="absolute z-10 mt-2 bg-white border rounded shadow p-4 w-full max-h-60 overflow-auto">
+                        <div className="absolute z-10 mt-2 bg-white border rounded shadow p-4 w-70 max-h-60 overflow-auto">
                           <div className="flex justify-between items-center mb-2">
                             <span className="text-sm font-semibold text-gray-600">เลือกฟอร์ม</span>
                             <button
@@ -216,7 +229,10 @@ export default function AdminDashboard() {
                           {availableForms.map((form) => {
                             const selected = selectedForms[role.id]?.includes(form.id) ?? false;
                             return (
-                              <label key={form.id} className="flex items-center gap-2 px-2 py-1 hover:bg-gray-50">
+                              <label
+                                key={form.id}
+                                className="flex items-center gap-2 px-2 py-1 hover:bg-gray-50 text-gray-600"
+                              >
                                 <input
                                   type="checkbox"
                                   checked={selected}
@@ -242,11 +258,13 @@ export default function AdminDashboard() {
 
                     <button
                       onClick={() => assignSelectedForms(role.id)}
-                      className="mt-2 w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                      className="mt-2 w-70 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                     >
                       + Assign Selected
                     </button>
                   </td>
+
+
 
 
                     
