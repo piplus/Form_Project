@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import * as XLSX from "xlsx";
 import Image from "next/image";
 
 interface Form {
@@ -65,69 +64,29 @@ export default function ReviewerDashboard() {
 
   const exportToExcel = async (formId: number, formFile: string) => {
     try {
-      const res = await fetch(`/api/reviewer/forms/${formId}/submissions`);
-      if (!res.ok) throw new Error("Failed to fetch submissions");
-
-      const data: FormSubmissionData = await res.json();
-      const { questions, responses } = data;
-
-      const formattedResponses = responses.length > 0
-        ? responses.map((response) => {
-            const parsedAnswers = typeof response.answers === "string"
-              ? JSON.parse(response.answers || "{}")
-              : response.answers || {};
-
-            const mappedAnswers: { [key: string]: string } = {};
-
-            questions.forEach((q) => {
-              if (q.type === "group" && Array.isArray(q.children)) {
-                q.children.forEach((child) => {
-                  mappedAnswers[child.label] = parsedAnswers[child.id] || "";
-                });
-              } else {
-                mappedAnswers[q.label] = parsedAnswers[q.id] || "";
-              }
-            });
-
-            return {
-              "User Name": response.user,
-              "User Email": response.email,
-              "Submitted At": new Date(response.createdAt).toLocaleString(),
-              "Quarter": `Q${response.quarter}`,
-              "Year": response.year,
-              ...mappedAnswers,
-            };
-          })
-        : [
-            {
-              "User Name": "",
-              "User Email": "",
-              "Submitted At": "",
-              "Quarter": "",
-              "Year": "",
-              ...questions.reduce((acc, q) => {
-                if (q.type === "group" && Array.isArray(q.children)) {
-                  q.children.forEach((child) => {
-                    acc[child.label] = "";
-                  });
-                } else {
-                  acc[q.label] = "";
-                }
-                return acc;
-              }, {} as Record<string, string>),
-            },
-          ];
-
-      const sheet = XLSX.utils.json_to_sheet(formattedResponses);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, sheet, "Responses");
-      XLSX.writeFile(wb, `${formFile}.xlsx`);
-
+      const res = await fetch(`/api/reviewer/forms/${formId}/export`, {
+        method: "GET",
+      });
+  
+      if (!res.ok) throw new Error("Failed to export Excel");
+  
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob); // ✅ TypeScript รู้จักแน่นอน
+  
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `${formFile}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+  
+      // optional: log export
       await fetch(`/api/reviewer/forms/${formId}/export-log`, { method: "POST" });
     } catch (error) {
       console.error("❌ Error exporting Excel:", error);
     }
   };
+  
 
   const handleSearch = (term: string) => {
     setSearch(term);

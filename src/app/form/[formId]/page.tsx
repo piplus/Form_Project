@@ -12,6 +12,7 @@ export default function FormPage() {
   const [form, setForm] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [answers, setAnswers] = useState<{ [key: string]: string | string[] }>({});
+  const [imagePreviews, setImagePreviews] = useState<{ [key: string]: string }>({});
 
   const searchParams = useSearchParams();
   const quarter = Number(searchParams.get("quarter"));
@@ -67,12 +68,37 @@ export default function FormPage() {
     }
   };
 
+  const handleFileUpload = (questionId: string, file: File) => {
+    return new Promise<void>((resolve, reject) => {
+      if (file.size > 1024 * 1024) {
+        alert("ไฟล์ภาพต้องไม่เกิน 1MB");
+        return reject("File too large");
+      }
+  
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        setAnswers((prev) => ({ ...prev, [questionId]: base64 }));
+        setImagePreviews((prev) => ({ ...prev, [questionId]: base64 })); // ✅ เก็บสำหรับ preview
+        resolve();
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
   if (loading) return <p className="text-center mt-10 text-lg">Loading...</p>;
   if (!form) return <p className="text-center mt-10 text-red-500 text-lg">Form not found</p>;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-6 py-10">
-      <h1 className="text-4xl font-bold text-gray-800 mb-6">📋 Form: {form.file}</h1>
+      <div className="w-full max-w-3xl flex justify-between items-center mb-4">
+        <h1 className="text-4xl font-bold text-gray-800">📋 Form: {form.file}</h1>
+        <div className="text-right text-gray-600 text-lg">
+          <div>Quarter: <span className="font-semibold">Q{quarter}</span></div>
+          <div>Year: <span className="font-semibold">{year}</span></div>
+        </div>
+      </div>
 
       <form
         onSubmit={handleSubmit}
@@ -125,6 +151,18 @@ export default function FormPage() {
                           />
                           // {qChild.label}
                         // </label>
+                      ) : 
+                      qChild.type === "file" ? (
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
+                            if (e.target.files?.[0]) {
+                              await handleFileUpload(qChild.id, e.target.files[0]); // ✅ ใช้ id ที่ตรงกับคำถาม
+                            }
+                          }}
+                          className="w-full p-2 border rounded text-gray-600"
+                        />
                       ) : (
                         <input
                           type={qChild.type || "text"}
@@ -203,6 +241,17 @@ export default function FormPage() {
                         );
                       })}
                     </div>
+                  ) : q.type === "file" ? (
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        if (e.target.files?.[0]) {
+                          await handleFileUpload(q.id, e.target.files[0]);
+                        }
+                      }}
+                      className="w-full p-2 border rounded"
+                    />
                   ) : null}
                   
                   
@@ -214,7 +263,7 @@ export default function FormPage() {
           <p className="text-red-500 text-lg">No questions available</p>
         )}
 
-
+        <p className="text-red-500 text-lg">หากไม่มีข้อมูล กรุณาใส่เครื่องหมาย -</p>  
         <button
           type="submit"
           className="w-full bg-blue-600 text-white text-lg py-3 rounded-md hover:bg-blue-700 transition shadow-md"

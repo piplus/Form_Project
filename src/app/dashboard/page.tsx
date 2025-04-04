@@ -166,27 +166,35 @@ export default function DashboardPage() {
           <div className="bg-white rounded-xl shadow-xl w-96 p-6 text-center">
             <h2 className="text-xl font-bold mb-4 text-gray-600">เลือกไตรมาสที่จะกรอก</h2>
             <div className="grid grid-cols-2 gap-4 text-gray-600">
-            {[1, 2, 3, 4].map((q) => {
-              const form = forms.find((f) => f.id === selectedFormId);
-              const isSubmitted =
-                Array.isArray(form?.submissions) &&
-                form.submissions.some((s) => s.year === selectedYear && s.quarter === q);
+              {[1, 2, 3, 4].map((q) => {
+                const form = forms.find((f) => f.id === selectedFormId);
+                const isSubmitted =
+                  Array.isArray(form?.submissions) &&
+                  form.submissions.some((s) => s.year === selectedYear && s.quarter === q);
 
-              return (
-                <button
-                  key={q}
-                  onClick={() => handleSelectQuarter(q)}
-                  className={`p-4 rounded-lg text-sm font-medium ${
-                    isSubmitted
-                      ? "bg-green-100 text-green-700 hover:bg-green-200"
-                      : "bg-blue-100 text-blue-700 hover:bg-blue-500 hover:text-white"
-                  }`}
-                >
-                  Quarter {q}
-                  {isSubmitted && <div className="text-xs mt-1">เคยส่งแล้ว ✅</div>}
-                </button>
-              );
-            })}
+                const quarterTextMap: Record<number, string> = {
+                  1: "1 ต.ค. - 31 ธ.ค.",
+                  2: "1 ม.ค. - 31 มี.ค.",
+                  3: "1 เม.ย. - 30 มิ.ย.",
+                  4: "1 ก.ค. - 30 ก.ย.",
+                };
+
+                return (
+                  <button
+                    key={q}
+                    onClick={() => handleSelectQuarter(q)}
+                    className={`p-4 rounded-lg text-sm font-medium text-center ${
+                      isSubmitted
+                        ? "bg-green-100 text-green-700 hover:bg-green-200"
+                        : "bg-blue-100 text-blue-700 hover:bg-blue-500 hover:text-white"
+                    }`}
+                  >
+                    <div className="font-semibold">Quarter {q}</div>
+                    <div className="text-sm">{quarterTextMap[q]}</div>
+                    {isSubmitted && <div className="text-xs mt-1">เคยส่งแล้ว ✅</div>}
+                  </button>
+                );
+              })}
             </div>
             <button
               onClick={() => setShowModal(false)}

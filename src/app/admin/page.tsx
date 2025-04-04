@@ -141,7 +141,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Form Access Management */}
-      <div className="bg-white shadow-md rounded-lg overflow-hidden mt-6">
+      <div className="bg-white shadow-md rounded-lg overflow-visible mt-6 mb-30">
         <h2 className="text-xl font-bold p-4 text-gray-700">Form Access Management</h2>
         <table className="w-full table-auto border-collapse">
           <thead>
