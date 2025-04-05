@@ -46,6 +46,7 @@ export default function ExportLogPage() {
               <th className="px-4 py-3 text-left text-gray-700">Form</th>
               <th className="px-4 py-3 text-left text-gray-700">Exported By</th>
               <th className="px-4 py-3 text-left text-gray-700">Email</th>
+              <th className="px-4 py-3 text-left text-gray-700">Year</th>
               <th className="px-4 py-3 text-left text-gray-700">Date</th>
             </tr>
           </thead>
@@ -55,6 +56,7 @@ export default function ExportLogPage() {
                 <td className="px-4 py-3">{log.form.file}</td>
                 <td className="px-4 py-3">{log.user.name}</td>
                 <td className="px-4 py-3">{log.user.email}</td>
+                <td className="px-4 py-3">{(log as any).year || "-"}</td>
                 <td className="px-4 py-3">
                   {new Date(log.exportedAt).toLocaleString("th-TH", {
                     dateStyle: "long",

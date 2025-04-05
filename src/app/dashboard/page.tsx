@@ -31,6 +31,14 @@ export default function DashboardPage() {
   }, [status]);
 
   useEffect(() => {
+    if (!session?.user?.id) return;
+    const savedYear = localStorage.getItem(`dashboard-year-${session.user.id}`);
+    if (savedYear) {
+      setSelectedYear(parseInt(savedYear));
+    }
+  }, [session?.user?.id]);
+
+  useEffect(() => {
     async function fetchForms() {
       if (!session?.user?.id) return;
       const res = await fetch(`/api/forms?userId=${session.user.id}&year=${selectedYear}`);
@@ -57,6 +65,13 @@ export default function DashboardPage() {
     }
   };
 
+  const handleYearChange = (year: number) => {
+    setSelectedYear(year);
+    if (session?.user?.id) {
+      localStorage.setItem(`dashboard-year-${session.user.id}`, year.toString());
+    }
+  };
+
   if (loading) return <p className="text-center mt-10">Loading...</p>;
 
   return (
@@ -80,11 +95,11 @@ export default function DashboardPage() {
 
       <main className="p-6 md:p-10">
         <div className="flex justify-end mb-4">
-          <select
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-            className="border rounded-md p-2 text-gray-600"
-          >
+        <select
+          value={selectedYear}
+          onChange={(e) => handleYearChange(parseInt(e.target.value))}
+          className="border rounded-md p-2 text-gray-600"
+        >
             {years.map((year) => (
               <option key={year} value={year}>
                 ปี {year}

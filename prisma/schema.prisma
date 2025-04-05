@@ -64,6 +64,7 @@ model ExportLog {
   id         Int      @id @default(autoincrement())
   userId     Int
   formId     Int
+  year       Int?      // ✅ เพิ่ม year
   exportedAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])

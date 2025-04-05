@@ -125,6 +125,7 @@ export default function FormPage() {
                             >
                               <input
                                 type="radio"
+                                required
                                 name={qChild.id} // ✅ ใช้ id ที่ถูกต้องของฟิลด์ย่อย
                                 value={option}
                                 className="mr-2"
@@ -190,6 +191,7 @@ export default function FormPage() {
                         <div key={option} className="flex items-center gap-2">
                           <input
                             type="radio"
+                            required
                             name={q.id}
                             value={option}
                             onChange={(e) => {

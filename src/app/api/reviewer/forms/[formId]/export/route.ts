@@ -10,6 +10,9 @@ const prisma = new PrismaClient();
 export async function GET(req: Request, { params }: { params: { formId: string } }) {
   try {
     const formId = Number(params.formId);
+    const url = new URL(req.url);
+    const yearFilter = url.searchParams.get("year");
+
     if (isNaN(formId)) {
       return NextResponse.json({ error: "Invalid Form ID" }, { status: 400 });
     }
@@ -19,6 +22,7 @@ export async function GET(req: Request, { params }: { params: { formId: string }
       include: {
         submissions: {
           include: { user: true },
+          orderBy: { createdAt: "asc" },
         },
       },
     });
@@ -27,11 +31,18 @@ export async function GET(req: Request, { params }: { params: { formId: string }
       return NextResponse.json({ error: "Form not found" }, { status: 404 });
     }
 
-    // const questions = JSON.parse(form.questions || "[]");
     const rawQuestions = form.questions;
     const questions = typeof rawQuestions === "string" ? JSON.parse(rawQuestions) : rawQuestions;
 
-    const responses = form.submissions || [];
+    let responses = form.submissions || [];
+
+    // ✅ Filter by year if provided
+    if (yearFilter) {
+      const targetYear = parseInt(yearFilter);
+      if (!isNaN(targetYear)) {
+        responses = responses.filter((res) => res.year === targetYear);
+      }
+    }
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Responses");
@@ -41,6 +52,7 @@ export async function GET(req: Request, { params }: { params: { formId: string }
         ? q.children.map((c: any) => c.label)
         : [q.label]
     );
+
     const headers = ["User Name", "User Email", "Submitted At", "Quarter", "Year", ...questionLabels];
     worksheet.addRow(headers);
 
@@ -52,8 +64,8 @@ export async function GET(req: Request, { params }: { params: { formId: string }
         res.user?.name || "",
         res.user?.email || "",
         new Date(res.createdAt).toLocaleString(),
-        `Q${res.quarter || ""}`,    // ✅ เปลี่ยนจาก res.status?.quarter
-        res.year || "",             // ✅ เปลี่ยนจาก res.status?.year
+        `Q${res.quarter || ""}`,
+        res.year || "",
       ];
 
       const row = worksheet.addRow([
@@ -71,10 +83,8 @@ export async function GET(req: Request, { params }: { params: { formId: string }
         const colIdx = 6 + i;
 
         if (typeof val === "string" && val.startsWith("data:image")) {
-
           const base64 = val.split(",")[1];
           const ext = val.includes("jpeg") ? "jpeg" : "png";
-
           const buffer = Buffer.from(base64, "base64") as unknown as ExcelJS.Buffer;
 
           const imgId = workbook.addImage({
@@ -87,7 +97,14 @@ export async function GET(req: Request, { params }: { params: { formId: string }
             ext: { width: 100, height: 100 },
           });
         } else {
-          worksheet.getRow(r + 2).getCell(colIdx).value = val;
+          let displayVal = val;
+
+          // ✅ ถ้าค่าคือ "อื่น..." ให้ใช้ค่าจาก _etc แทน
+          if (typeof val === "string" && val.startsWith("อื่น") && parsed[`${id}_etc`]) {
+            displayVal = parsed[`${id}_etc`];
+          }
+
+          worksheet.getRow(r + 2).getCell(colIdx).value = displayVal;
         }
       }
     }
@@ -98,7 +115,7 @@ export async function GET(req: Request, { params }: { params: { formId: string }
       status: 200,
       headers: {
         "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "Content-Disposition": `attachment; filename=form_${formId}.xlsx`,
+        "Content-Disposition": `attachment; filename=form_${formId}${yearFilter ? `_year_${yearFilter}` : ""}.xlsx`,
       },
     });
   } catch (error) {
