@@ -22,15 +22,17 @@ model User {
   role        Role             @relation(fields: [roleId], references: [id])
   roleId      Int
   submissions FormSubmission[] // ✅ เพิ่มความสัมพันธ์กลับไปยัง FormSubmission
+  ExportLog   ExportLog[]
 }
 
 model Form {
   id          Int              @id @default(autoincrement())
   file        String           @unique
-  status      String           @default("Pending")
+  description String           @default("")
   questions   Json
   access      FormAccess[]
-  submissions FormSubmission[] // ✅ เพิ่มความสัมพันธ์กลับไปยัง FormSubmission
+  submissions FormSubmission[]
+  ExportLog   ExportLog[]
 }
 
 model FormAccess {
@@ -44,13 +46,27 @@ model FormAccess {
 }
 
 model FormSubmission {
-  id        Int      @id @default(autoincrement())
-  formId    Int
-  userId    Int
-  status    String   @default("Submitted")
-  answers   Json
-  createdAt DateTime @default(now())
+  id              Int      @id @default(autoincrement())
+  formId          Int
+  userId          Int
+  quarter         Int
+  year            Int      @default(2025)  // ✅ เพิ่ม default
+  status          String   @default("Submitted")
+  answers         Json
+  lastSubmittedAt DateTime @default(now())
+  createdAt       DateTime @default(now())
 
   form Form @relation(fields: [formId], references: [id])
   user User @relation(fields: [userId], references: [id])
+}
+
+model ExportLog {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  formId     Int
+  year       Int?      // ✅ เพิ่ม year
+  exportedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  form Form @relation(fields: [formId], references: [id])
 }

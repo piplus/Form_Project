@@ -37,8 +37,11 @@ export async function GET(req: Request, context: { params: { formId: string } })
       user: submission.user.name,
       email: submission.user.email,
       createdAt: submission.createdAt,
-      answers: submission.answers, // JSON เก็บคำตอบ
+      quarter: submission.quarter, // 👈 เพิ่มตรงนี้
+      year: submission.year,
+      answers: submission.answers,
     }));
+    
 
     return NextResponse.json({ questions, responses });
   } catch (error) {

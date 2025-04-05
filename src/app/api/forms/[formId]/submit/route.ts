@@ -5,41 +5,46 @@ const prisma = new PrismaClient();
 
 export async function POST(req: Request, context: { params: { formId: string } }) {
   try {
-    console.log("📌 API: Form Submission Request Received");
-
     const formId = parseInt(context.params.formId, 10);
-    console.log("📌 API: formId", formId);
+    // const { userId, answers, quarter } = await req.json();
+    const { userId, answers, quarter, year } = await req.json();
 
-    const { userId, answers } = await req.json();
-    console.log("📌 API: userId", userId);
-    console.log("📌 API: answers", answers);
+    console.log("🧪 userId:", userId);
+    console.log("🧪 answers:", answers);
+    console.log("🧪 quarter:", quarter);
+    console.log("🧪 formId:", formId);
+    console.log("🧪 year:", year);
 
-    if (!userId || !answers) {
-      return NextResponse.json({ error: "Missing userId or answers" }, { status: 400 });
+    // if (!userId || !answers || !quarter || isNaN(formId)) {
+    //   return NextResponse.json({ error: "Missing or invalid data" }, { status: 400 });
+    // }
+
+    if (!userId || !answers || !quarter || !year || isNaN(formId)) {
+      return NextResponse.json({ error: "Missing or invalid data" }, { status: 400 });
     }
 
-    // ตรวจสอบว่าฟอร์มมีอยู่จริง
     const form = await prisma.form.findUnique({ where: { id: formId } });
     if (!form) {
       return NextResponse.json({ error: "Form not found" }, { status: 404 });
     }
 
-    // บันทึกข้อมูลลง Database
     const submission = await prisma.formSubmission.create({
       data: {
         formId,
-        userId: Number(userId), // ✅ แปลงเป็น Number
+        userId: Number(userId),
+        quarter: Number(quarter),
+        year, // ✅ ระบุปีปัจจุบัน
         answers,
         status: "Submitted",
+        lastSubmittedAt: new Date(),
       },
     });
-    
 
-    console.log("📌 API: Form submitted successfully", submission);
-    return NextResponse.json({ message: "Form submitted successfully", submission }, { status: 201 });
+    console.log("📌 New submission row created:", submission);
+    return NextResponse.json({ message: "Form submitted successfully", submission });
 
   } catch (error) {
-    console.error("❌ API: Error submitting form:", error);
-    return NextResponse.json({ error: "Error submitting form" }, { status: 500 });
+    console.error("❌ Error submitting form:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
