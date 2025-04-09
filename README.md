@@ -38,3 +38,5 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 npm install
 npx prisma generate
 npx prisma migrate dev --name init
+npx prisma db push
+npx prisma db seed
