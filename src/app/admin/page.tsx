@@ -87,10 +87,22 @@ export default function AdminDashboard() {
     <div className="min-h-screen p-10 bg-gray-100">
       <nav className="bg-gray-200 shadow px-6 py-3 flex justify-between items-center rounded-lg">
         <div className="flex items-center gap-2">
-          <Image src="/weblogo2.png" alt="E-Kept Logo" width={200} height={0} />
-          <h1 className="text-3xl font-bold text-gray-700">Admin Dashboard</h1>
+          <Image src="/LOGO 2.png" alt="E-Kept Logo" width={120} height={0} />
+          <h1 className="text-3xl font-bold text-gray-700 ml-10">Admin Dashboard</h1>
         </div>
         <div className="flex items-center gap-4">
+          <button
+            onClick={() => router.push("/admin/users")}
+            className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Users
+          </button>
+          <button
+            onClick={() => router.push("/admin/roles")}
+            className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Roles
+          </button>
           <button
             onClick={() => router.push("/admin/export-log")}
             className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"

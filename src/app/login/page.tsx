@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import Image from "next/image"; // 👈 เพิ่มบรรทัดนี้
+import Image from "next/image";
+import { Poppins } from 'next/font/google';
+
+const poppins = Poppins({ subsets: ['latin'], weight: ['400', '600'] });
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -27,25 +30,15 @@ export default function LoginPage() {
     }
 
     try {
-      // ✅ ดึงข้อมูล session หลังจาก Login
       const res = await fetch("/api/auth/session");
       const session = await res.json();
-
-      console.log("📌 User Session:", session);
-
-      // ✅ ดึง Role ของ User
       const userRole = session?.user?.role;
 
-      // ✅ ถ้าเป็น "admin" → ไปหน้า Admin
       if (userRole === "admin") {
         router.push("/admin");
-      }
-      // ✅ ถ้า Role เริ่มต้นด้วย "form_reviewer_" → ไป reviewer_dashboard
-      else if (userRole?.startsWith("form_reviewer_")) {
+      } else if (userRole?.startsWith("form_reviewer_")) {
         router.push("/reviewer-dashboard");
-      }
-      // ✅ ถ้าเป็น User ปกติ → ไปหน้า Dashboard
-      else {
+      } else {
         router.push("/dashboard");
       }
     } catch (error) {
@@ -55,62 +48,78 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className={`flex min-h-screen ${poppins.className}`}>
       {/* Left Section */}
-      <div className="hidden lg:flex flex-col items-center justify-center w-1/2 bg-gray-200 p-10">
+      <div className="hidden lg:flex flex-col items-center justify-center w-1/2 bg-gray-100 p-12 space-y-6">
         <Image
-          src="/weblogo.png"
+          src="/LOGO 2.png"
           alt="E-Kept Logo"
-          width={500}
-          height={500}
-          className="object-contain mb-4"
+          width={280}
+          height={280}
+          className="object-contain"
         />
+
+        <div className="text-center text-gray-800 space-y-2 max-w-md">
+          <h2 className="text-3xl font-semibold">E-GEB</h2>
+          <p className="text-sm italic text-gray-600">
+            Engineering Governance and Evidence-Based Platform
+          </p>
+          <p className="text-sm leading-relaxed text-gray-600">
+            แพลตฟอร์มสำหรับการบริหารจัดการข้อมูลอย่างมีหลักฐานและเป็นระบบ <br />
+            พัฒนาโดยฝ่ายบริหารและวางแผน คณะวิศวกรรมศาสตร์ (2025)
+          </p>
+          <p className="text-sm font-semibold text-blue-700">
+            อีเก็บ – เก็บให้ครบ ไม่หลง ไม่ลืม ไม่พลาดข้อมูลสำคัญ
+          </p>
+        </div>
       </div>
-      
+
       {/* Right Section */}
-      <div className="flex flex-col justify-center items-center bg-white w-full lg:w-1/2 p-10">
-        <h2 className="text-2xl font-semibold text-gray-700 mb-6">Login</h2>
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-        <form onSubmit={handleSubmit} className="w-full max-w-md space-y-4">
-          <div>
-            <label className="block text-gray-600">E-mail</label>
-            <input
-              type="email"
-              placeholder="Type your e-mail"
-              className="w-full p-3 border rounded-md bg-gray-100 text-gray-700"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+      <div className="flex flex-col justify-center items-center bg-white w-full lg:w-1/2 p-8">
+        <div className="w-full max-w-md shadow-md border border-gray-100 rounded-xl p-8 space-y-6">
+          <h2 className="text-2xl font-semibold text-gray-900">Login</h2>
+          {error && <p className="text-red-500 text-center">{error}</p>}
 
-          <div>
-            <label className="block text-gray-600">Password</label>
-            <input
-              type="password"
-              placeholder="Type your password"
-              className="w-full p-3 border rounded-md bg-gray-100 text-gray-700"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm text-gray-700">E-mail</label>
+              <input
+                type="email"
+                placeholder="you@example.com"
+                className="w-full p-3 mt-1 border rounded-md bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
 
-          <button
-            type="submit"
-            className="w-full p-3 text-white bg-black rounded-md hover:bg-gray-900 transition"
-          >
-            Sign In
-          </button>
-        </form>
+            <div>
+              <label className="block text-sm text-gray-700">Password</label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                className="w-full p-3 mt-1 border rounded-md bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
 
-        {/* ✅ ปุ่มไป Register */}
-        <p className="mt-4 text-sm text-gray-500">
-          Don't have an account?{" "}
-          <a href="/register" className="font-bold text-blue-600 hover:underline">
-            Register here
-          </a>
-        </p>
+            <button
+              type="submit"
+              className="w-full p-3 bg-black text-white rounded-md hover:bg-gray-900 transition-all"
+            >
+              Sign In
+            </button>
+          </form>
+
+          <p className="text-sm text-gray-500 text-center">
+            Don't have an account?{" "}
+            <a href="/register" className="font-medium text-blue-600 hover:underline">
+              Register here
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );

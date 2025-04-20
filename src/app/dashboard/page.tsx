@@ -78,7 +78,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gray-100">
       <nav className="bg-white shadow px-6 py-3 flex justify-between items-center">
         <div className="flex items-center gap-2">
-          <Image src="/weblogo2.png" alt="Logo" width={200} height={0} />
+          <Image src="/LOGO 2.png" alt="Logo" width={120} height={0} />
         </div>
         <div className="flex items-center gap-4">
           <span className="text-sm text-gray-600 hidden sm:block">

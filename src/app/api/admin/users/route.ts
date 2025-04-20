@@ -28,3 +28,9 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "Error updating role" }, { status: 500 });
   }
 }
+
+export async function DELETE(req: Request) {
+  const { id } = await req.json();
+  await prisma.user.delete({ where: { id } });
+  return NextResponse.json({ success: true });
+}

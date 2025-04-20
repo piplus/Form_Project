@@ -2,11 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Poppins } from 'next/font/google';
+
+const poppins = Poppins({ subsets: ['latin'], weight: ['400', '600'] });
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState(""); // ✅ เพิ่ม state
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const router = useRouter();
@@ -15,6 +19,12 @@ export default function RegisterPage() {
     e.preventDefault();
     setError("");
     setSuccess("");
+
+    // ✅ เช็ครหัสผ่านซ้ำ
+    if (password !== confirmPassword) {
+      setError("รหัสผ่านไม่ตรงกัน");
+      return;
+    }
 
     const res = await fetch("/api/auth/register", {
       method: "POST",
@@ -25,7 +35,7 @@ export default function RegisterPage() {
     const data = await res.json();
 
     if (res.ok) {
-      setSuccess("สมัครสมาชิกสำเร็จ! กำลังพาไปหน้า Login...");
+      setSuccess("✅ สมัครสมาชิกสำเร็จ! กำลังพาไปหน้า Login...");
       setTimeout(() => {
         router.push("/login");
       }, 2000);
@@ -35,46 +45,75 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md p-8 bg-white shadow-md rounded-lg">
-        <h2 className="text-2xl font-semibold text-center text-gray-700 mb-6">Register</h2>
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-        {success && <p className="text-green-500 text-center mb-4">{success}</p>}
+    <div className={`flex min-h-screen items-center justify-center bg-gray-100 px-4 ${poppins.className}`}>
+      <div className="w-full max-w-md p-8 bg-white shadow-sm border border-gray-200 rounded-2xl space-y-6">
+        <h2 className="text-2xl font-semibold text-center text-gray-900">Create an account</h2>
+
+        {error && <p className="text-red-500 text-center">{error}</p>}
+        {success && <p className="text-green-600 text-center">{success}</p>}
+
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Name"
-            className="w-full p-3 border rounded-md text-gray-700"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            className="w-full p-3 border rounded-md text-gray-700"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full p-3 border rounded-md text-gray-700"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">Full Name</label>
+            <input
+              type="text"
+              placeholder="Your Name"
+              className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">Email</label>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">Password</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-gray-700 mb-1">Confirm Password</label>
+            <input
+              type="password"
+              placeholder="Re-enter your password"
+              className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+          </div>
+
           <button
             type="submit"
-            className="w-full p-3 text-white bg-blue-600 rounded-md hover:bg-blue-700"
+            className="w-full p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
           >
             Register
           </button>
         </form>
-        <p className="mt-4 text-sm text-gray-500 text-center">
+
+        <p className="text-sm text-gray-500 text-center">
           Already have an account?{" "}
-          <a href="/login" className="font-bold text-blue-600">Login</a>
+          <a href="/login" className="font-medium text-blue-600 hover:underline">
+            Login
+          </a>
         </p>
       </div>
     </div>
