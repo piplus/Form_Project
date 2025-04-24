@@ -1,18 +1,28 @@
 "use client";
 
-import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Poppins } from 'next/font/google';
+import { Poppins } from "next/font/google";
 
-const poppins = Poppins({ subsets: ['latin'], weight: ['400', '600'] });
+const poppins = Poppins({ subsets: ["latin"], weight: ["400", "600"] });
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const { data: session } = useSession();
   const router = useRouter();
+
+  useEffect(() => {
+    if (session?.user?.role) {
+      const role = session.user.role;
+      if (role === "admin") router.push("/admin");
+      else if (role.startsWith("reviewer")) router.push("/reviewer-dashboard");
+      else router.push("/dashboard");
+    }
+  }, [session, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,11 +42,11 @@ export default function LoginPage() {
     try {
       const res = await fetch("/api/auth/session");
       const session = await res.json();
-      const userRole = session?.user?.role;
+      const role = session?.user?.role;
 
-      if (userRole === "admin") {
+      if (role === "admin") {
         router.push("/admin");
-      } else if (userRole?.startsWith("form_reviewer_")) {
+      } else if (role?.startsWith("reviewer")) {
         router.push("/reviewer-dashboard");
       } else {
         router.push("/dashboard");
@@ -51,14 +61,7 @@ export default function LoginPage() {
     <div className={`flex min-h-screen ${poppins.className}`}>
       {/* Left Section */}
       <div className="hidden lg:flex flex-col items-center justify-center w-1/2 bg-gray-100 p-12 space-y-6">
-        <Image
-          src="/LOGO 2.png"
-          alt="E-Kept Logo"
-          width={280}
-          height={280}
-          className="object-contain"
-        />
-
+        <Image src="/LOGO 2.png" alt="E-Kept Logo" width={280} height={280} />
         <div className="text-center text-gray-800 space-y-2 max-w-md">
           <h2 className="text-3xl font-semibold">E-GEB</h2>
           <p className="text-sm italic text-gray-600">

@@ -46,7 +46,7 @@ export default function ExportLogPage() {
               <th className="px-4 py-3 text-left text-gray-700">Form</th>
               <th className="px-4 py-3 text-left text-gray-700">Exported By</th>
               <th className="px-4 py-3 text-left text-gray-700">Email</th>
-              <th className="px-4 py-3 text-left text-gray-700">Year</th>
+              <th className="px-4 py-3 text-left text-gray-700">File Year</th>
               <th className="px-4 py-3 text-left text-gray-700">Date</th>
             </tr>
           </thead>

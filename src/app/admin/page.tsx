@@ -85,38 +85,35 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen p-10 bg-gray-100">
-      <nav className="bg-gray-200 shadow px-6 py-3 flex justify-between items-center rounded-lg">
-        <div className="flex items-center gap-2">
-          <Image src="/LOGO 2.png" alt="E-Kept Logo" width={120} height={0} />
-          <h1 className="text-3xl font-bold text-gray-700 ml-10">Admin Dashboard</h1>
-        </div>
-        <div className="flex items-center gap-4">
+      <nav className="bg-white shadow-md rounded-lg px-6 py-4 mb-6 flex justify-between items-center">
+      <div className="flex items-center gap-4">
+        <Image src="/LOGO 2.png" alt="E-Kept Logo" width={100} height={100} />
+        <h1 className="text-2xl font-semibold text-gray-800">Admin Dashboard</h1>
+      </div>
+      <div className="flex gap-3">
+        {[
+          { label: "📈 Summary Graph", path: "/admin/roles/summary" },
+          { label: "👥 Users", path: "/admin/users" },
+          { label: "🛡️ Roles", path: "/admin/roles" },
+          { label: "📁 Export Log", path: "/admin/export-log" },
+        ].map((item) => (
           <button
-            onClick={() => router.push("/admin/users")}
-            className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-blue-700"
+            key={item.label}
+            onClick={() => router.push(item.path)}
+            className="px-4 py-2 bg-indigo-300 text-white rounded-lg hover:bg-indigo-700 transition"
           >
-            Users
+            {item.label}
           </button>
-          <button
-            onClick={() => router.push("/admin/roles")}
-            className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-blue-700"
-          >
-            Roles
-          </button>
-          <button
-            onClick={() => router.push("/admin/export-log")}
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-          >
-            Export Log
-          </button>
-          <button
-            onClick={() => signOut({ callbackUrl: "/login" })}
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-          >
-            Logout
-          </button>
-        </div>
-      </nav>
+        ))}
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+        >
+          🚪 Logout
+        </button>
+      </div>
+    </nav>
+
 
       {/* Users Table */}
       <div className="bg-white shadow-md rounded-lg overflow-hidden mt-6">
@@ -164,7 +161,9 @@ export default function AdminDashboard() {
             </tr>
           </thead>
           <tbody>
-            {roles.map((role) => {
+            {roles
+              .filter((role) => !role.name.toLowerCase().startsWith("admin") && !role.name.toLowerCase().startsWith("reviewer"))
+              .map((role) => {
               const availableForms = forms.filter(
                 (form) => !formAccess.some((fa) => fa.role.id === role.id && fa.form.id === form.id)
               );

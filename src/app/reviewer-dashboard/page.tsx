@@ -118,34 +118,30 @@ export default function ReviewerDashboard() {
   if (loading) return <p className="text-center mt-10">Loading...</p>;
 
   return (
-    <div className="min-h-screen p-10 bg-gray-100">
+    <div className="min-h-screen p-6 md:p-10 bg-gray-100 text-gray-800">
       {/* Header */}
-      <nav className="bg-gray-200 shadow px-6 py-3 flex justify-between items-center rounded-lg mb-6">
-        <div className="flex items-center gap-2">
-          <Image src="/weblogo2.png" alt="E-Kept Logo" width={200} height={0} />
-          <h1 className="text-3xl font-bold text-gray-700">Reviewer Dashboard</h1>
-        </div>
+      <nav className="bg-white shadow-sm rounded-lg px-6 py-4 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-4">
-
-          <button
-            onClick={() => signOut({ callbackUrl: "/login" })}
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-          >
-            Logout
-          </button>
+          <Image src="/LOGO 2.png" alt="E-Kept Logo" width={160} height={0} />
+          <h1 className="text-2xl md:text-3xl font-bold ml-10">Reviewer Dashboard</h1>
         </div>
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+        >
+          🚪 Logout
+        </button>
       </nav>
 
-      {/* Search */}
-      <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      {/* Search + Year */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
         <input
           type="text"
           placeholder="🔍 ค้นหาด้วยชื่อฟอร์ม"
           value={search}
           onChange={(e) => handleSearch(e.target.value)}
-          className="w-full md:w-1/2 p-3 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-400 text-gray-600"
+          className="w-full md:w-1/2 p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400"
         />
-
         <select
           value={selectedYear}
           onChange={(e) => {
@@ -155,7 +151,7 @@ export default function ReviewerDashboard() {
               localStorage.setItem(`reviewer-year-${session.user.id}`, newYear.toString());
             }
           }}
-          className="w-full md:w-auto px-3 py-2 rounded-md border border-gray-300 shadow-sm text-gray-700 focus:ring-2 focus:ring-blue-400"
+          className="w-full md:w-auto px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400"
         >
           {Array.from({ length: 10 }).map((_, idx) => {
             const year = currentYear - idx;
@@ -168,32 +164,35 @@ export default function ReviewerDashboard() {
         </select>
       </div>
 
-      {/* Card Grid */}
+      {/* Cards */}
       {filteredForms.length === 0 ? (
-        <p className="text-red-500 font-semibold text-center text-lg mt-6">
+        <p className="text-center text-red-500 font-medium mt-10 text-lg">
           ❌ ไม่พบข้อมูลฟอร์มที่คุณค้นหา
         </p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-gray-600">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredForms.map((form) => (
             <div
               key={form.id}
-              className="bg-white border border-gray-200 shadow-sm rounded-lg p-6 hover:shadow-lg transition"
+              className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition p-6 flex flex-col justify-between"
             >
-              <h2 className="text-xl font-semibold mb-2 text-blue-800">{form.file}</h2>
-              {form.description && (
-                <p className="text-sm text-gray-500 mb-4 leading-snug">{form.description}</p>
-              )}
+              <div>
+                <h2 className="text-lg font-semibold text-blue-700 mb-2">{form.file}</h2>
+                {form.description && (
+                  <p className="text-sm text-gray-500 leading-relaxed mb-4">{form.description}</p>
+                )}
+              </div>
               <button
                 onClick={() => exportToExcel(form.id, form.file)}
-                className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700 transition"
               >
-                Export to Excel
+                📤 Export to Excel
               </button>
             </div>
           ))}
         </div>
       )}
     </div>
+
   );
 }

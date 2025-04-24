@@ -7,12 +7,20 @@ async function main() {
   // ✅ สร้าง Role ต่างๆ
   const roles = [
     { name: "admin" },
-    { name: "user_a" },
-    { name: "user_b" },
-    { name: "user_c" },
-    { name: "user_d" },
-    { name: "form_reviewer_1" },
-    { name: "form_reviewer_2" },
+    { name: "reviewer_1" },
+    { name: "reviewer_2" },
+    // === ภาค/คณะจาก RMUTT ===
+    { name: "วิศวกรรมศาสตร์" },
+    { name: "สถาปัตยกรรมศาสตร์" },
+    { name: "บริหารธุรกิจ" },
+    { name: "วิทยาศาสตร์และเทคโนโลยี" },
+    { name: "เทคโนโลยีการเกษตร" },
+    { name: "ครุศาสตร์อุตสาหกรรม" },
+    { name: "ศิลปศาสตร์" },
+    { name: "เทคโนโลยีคหกรรมศาสตร์" },
+    { name: "เทคโนโลยีสื่อสารมวลชน" },
+    { name: "วิทยาศาสตร์การกีฬา" },
+    { name: "ศิลปกรรมศาสตร์" },
   ];
 
   for (const role of roles) {
@@ -42,7 +50,7 @@ async function main() {
       name: "testA",
       email: "test@test.com",
       password: await bcrypt.hash("testtest", 10),
-      role: { connect: { name: "user_a" } },
+      role: { connect: { name: "วิศวกรรมศาสตร์" } },
     },
   });
 
@@ -53,7 +61,18 @@ async function main() {
       name: "testB",
       email: "userb@test.com",
       password: await bcrypt.hash("testtest", 10),
-      role: { connect: { name: "user_b" } },
+      role: { connect: { name: "วิศวกรรมศาสตร์" } },
+    },
+  });
+
+  const userC = await prisma.user.upsert({
+    where: { email: "userc@test.com" },
+    update: {},
+    create: {
+      name: "testC",
+      email: "userc@test.com",
+      password: await bcrypt.hash("testtest", 10),
+      role: { connect: { name: "วิศวกรรมศาสตร์" } },
     },
   });
 
@@ -64,7 +83,7 @@ async function main() {
       name: "Reviewer1",
       email: "reviewer1@test.com",
       password: await bcrypt.hash("reviewer123", 10),
-      role: { connect: { name: "form_reviewer_1" } },
+      role: { connect: { name: "reviewer_1" } },
     },
   });
 

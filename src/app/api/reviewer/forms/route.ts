@@ -10,7 +10,7 @@ export async function GET(req: Request) {
     const roleName = searchParams.get("role");
 
     // ❌ ไม่ต้องเช็ค roleName ให้ reviewer ดูได้ทุกฟอร์ม
-    if (!roleName || !roleName.startsWith("form_reviewer")) {
+    if (!roleName || !roleName.startsWith("reviewer")) {
       return NextResponse.json({ error: "Missing or invalid role parameter" }, { status: 400 });
     }
 
