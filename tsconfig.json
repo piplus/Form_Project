@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": ".", // สำคัญ
     "target": "ES2017",
     "lib": ["dom", "esnext"],
     "allowJs": true,
@@ -19,7 +20,7 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

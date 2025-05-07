@@ -19,7 +19,14 @@ export default function RegisterPage() {
     e.preventDefault();
     setError("");
     setSuccess("");
+    
+    const inviteRes = await fetch(`/api/invite/check?email=${email}`);
+    const invite = await inviteRes.json();
 
+    if (!invite || !invite.roleId) {
+      setError("ไม่พบคำเชิญสำหรับอีเมลนี้ กรุณาติดต่อแอดมิน");
+      return;
+    }
     // ✅ เช็ครหัสผ่านซ้ำ
     if (password !== confirmPassword) {
       setError("รหัสผ่านไม่ตรงกัน");

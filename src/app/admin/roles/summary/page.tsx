@@ -63,9 +63,9 @@ export default function RoleSummaryPage() {
         data: filteredSummary.map((s) => s.totalSubmissions),
         backgroundColor: [
           "rgba(59, 130, 246, 0.7)",
-          "rgba(96, 165, 250, 0.7)",
-          "rgba(147, 197, 253, 0.7)",
-          "rgba(191, 219, 254, 0.7)",
+          "rgba(0, 255, 255, 0.7)",
+          "rgba(98, 255, 106, 0.7)",
+          "rgba(252, 255, 50, 0.7)",
         ],
       },
     ],

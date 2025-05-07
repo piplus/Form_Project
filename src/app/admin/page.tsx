@@ -95,6 +95,7 @@ export default function AdminDashboard() {
           { label: "📈 Summary Graph", path: "/admin/roles/summary" },
           { label: "👥 Users", path: "/admin/users" },
           { label: "🛡️ Roles", path: "/admin/roles" },
+          { label: "📧 Invites", path: "/admin/invites" },
           { label: "📁 Export Log", path: "/admin/export-log" },
         ].map((item) => (
           <button

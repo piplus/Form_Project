@@ -7,29 +7,54 @@ async function main() {
   // ✅ สร้าง Role ต่างๆ
   const roles = [
     { name: "admin" },
-    { name: "reviewer_1" },
-    { name: "reviewer_2" },
+    { name: "reviewer" },
+    { name: "reviewer_สำนักงานคณบดี" },
+    { name: "reviewer_งานบุคลากร" },
+    { name: "reviewer_ฝ่ายพัฒนานักศึกษา" },
+    { name: "reviewer_ฝ่ายวิชาการ" },
+    { name: "reviewer_ฝ่ายวิจัยพัฒนาและบริการวิชาการ" },
+    { name: "reviewer_งานประกันคุณภาพการศึกษา" },
+    { name: "reviewer_ภาควิชาวิศวกรรมโยธา" },
+    { name: "reviewer_ภาควิชาวิศวกรรมเคมี" },
+    { name: "reviewer_ภาควิชาวิศวกรรมอิเล็กทรอนิกส์และโทรคมนาคม" },
+    { name: "reviewer_ภาควิชาวิศวกรรมวัสดุและโลหการ" },
+    { name: "reviewer_ภาควิชาวิศวกรรมคอมพิวเตอร์" },
+    { name: "reviewer_ภาควิชาวิศวกรรมเครื่องกล" },
+    { name: "reviewer_ภาควิชาวิศวกรรมไฟฟ้า" },
+    { name: "reviewer_ภาควิชาวิศวกรรมอุตสาหการ" },
+    { name: "reviewer_ภาควิชาวิศวกรรมสิ่งทอ" },
+    { name: "reviewer_งานแผนและงบประมาณ" },
+    { name: "reviewer_ภาควิชาวิศวกรรมเกษตร" },
     // === ภาค/คณะจาก RMUTT ===
-    { name: "วิศวกรรมศาสตร์" },
-    { name: "สถาปัตยกรรมศาสตร์" },
-    { name: "บริหารธุรกิจ" },
-    { name: "วิทยาศาสตร์และเทคโนโลยี" },
-    { name: "เทคโนโลยีการเกษตร" },
-    { name: "ครุศาสตร์อุตสาหกรรม" },
-    { name: "ศิลปศาสตร์" },
-    { name: "เทคโนโลยีคหกรรมศาสตร์" },
-    { name: "เทคโนโลยีสื่อสารมวลชน" },
-    { name: "วิทยาศาสตร์การกีฬา" },
-    { name: "ศิลปกรรมศาสตร์" },
+    { name: "ผู้ใช้ทั่วไป" },
+    { name: "สำนักงานคณบดี" },
+    { name: "งานบุคลากร" },
+    { name: "ฝ่ายพัฒนานักศึกษา" },
+    { name: "ฝ่ายวิชาการ" },
+    { name: "ฝ่ายวิจัยพัฒนาและบริการวิชาการ" },
+    { name: "งานประกันคุณภาพการศึกษา" },
+    { name: "ภาควิชาวิศวกรรมโยธา" },
+    { name: "ภาควิชาวิศวกรรมเคมี" },
+    { name: "ภาควิชาวิศวกรรมอิเล็กทรอนิกส์และโทรคมนาคม" },
+    { name: "ภาควิชาวิศวกรรมวัสดุและโลหการ" },
+    { name: "ภาควิชาวิศวกรรมคอมพิวเตอร์" },
+    { name: "ภาควิชาวิศวกรรมเครื่องกล" },
+    { name: "ภาควิชาวิศวกรรมไฟฟ้า" },
+    { name: "ภาควิชาวิศวกรรมอุตสาหการ" },
+    { name: "ภาควิชาวิศวกรรมสิ่งทอ" },
+    { name: "ภาควิชาวิศวกรรมเกษตร" },
+    { name: "งานแผนและงบประมาณ" },
   ];
 
-  for (const role of roles) {
-    await prisma.role.upsert({
-      where: { name: role.name },
-      update: {},
-      create: role,
-    });
-  }
+  await Promise.all(
+    roles.map(role =>
+      prisma.role.upsert({
+        where: { name: role.name },
+        update: {},
+        create: role,
+      })
+    )
+  );
 
   // ✅ สร้าง Users ตัวอย่าง
   const adminUser = await prisma.user.upsert({
@@ -50,29 +75,7 @@ async function main() {
       name: "testA",
       email: "test@test.com",
       password: await bcrypt.hash("testtest", 10),
-      role: { connect: { name: "วิศวกรรมศาสตร์" } },
-    },
-  });
-
-  const userB = await prisma.user.upsert({
-    where: { email: "userb@test.com" },
-    update: {},
-    create: {
-      name: "testB",
-      email: "userb@test.com",
-      password: await bcrypt.hash("testtest", 10),
-      role: { connect: { name: "วิศวกรรมศาสตร์" } },
-    },
-  });
-
-  const userC = await prisma.user.upsert({
-    where: { email: "userc@test.com" },
-    update: {},
-    create: {
-      name: "testC",
-      email: "userc@test.com",
-      password: await bcrypt.hash("testtest", 10),
-      role: { connect: { name: "วิศวกรรมศาสตร์" } },
+      role: { connect: { name: "ผู้ใช้ทั่วไป" } },
     },
   });
 
@@ -83,7 +86,7 @@ async function main() {
       name: "Reviewer1",
       email: "reviewer1@test.com",
       password: await bcrypt.hash("reviewer123", 10),
-      role: { connect: { name: "reviewer_1" } },
+      role: { connect: { name: "reviewer" } },
     },
   });
 
@@ -1166,28 +1169,9 @@ async function main() {
   },
 
 
-    
-    
-    
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
   ];
 
   for (const form of forms) {
@@ -1195,6 +1179,78 @@ async function main() {
       where: { file: form.file },
       update: {},
       create: form,
+    });
+  }
+
+  const invites = [
+    { email: "mathika.m@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "reviewer_สำนักงานคณบดี" },
+    { email: "Tippawan.b@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "งานบุคลากร" },
+    { email: "panatda.e@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "reviewer_งานบุคลากร" },
+    { email: "natee.s@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "reviewer_ฝ่ายพัฒนานักศึกษา" },
+    { email: "therakanya.s@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "ฝ่ายพัฒนานักศึกษา" },
+    { email: "nucharin.f@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "ฝ่ายพัฒนานักศึกษา" },
+    { email: "kullachat.k@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "ฝ่ายวิชาการ" },
+    { email: "chadchadaporn.p@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "reviewer_ฝ่ายวิชาการ" },
+    { email: "prangthong.o@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "reviewer_ฝ่ายวิจัยพัฒนาและบริการวิชาการ" },
+    { email: "pitchaya.w@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "ฝ่ายวิจัยพัฒนาและบริการวิชาการ" },
+    { email: "pipat.p@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "reviewer_งานประกันคุณภาพการศึกษา" },
+    { email: "duangduen.s@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "reviewer_งานประกันคุณภาพการศึกษา" },
+    { email: "amornrat.k@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "reviewer_งานประกันคุณภาพการศึกษา" },
+    { email: "sukhom.l@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "ภาควิชาวิศวกรรมโยธา" },
+    { email: "jatuphon.t@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "reviewer_ภาควิชาวิศวกรรมโยธา" },
+    { email: "sasiradee.j@en. rmut.ac.th", used: false, invitedAt: new Date(), roleName: "reviewer_ภาควิชาวิศวกรรมเคมี" },
+    { email: "la-ongthip.y@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "ภาควิชาวิศวกรรมเคมี" },
+    { email: "paitoon.r@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "reviewer_ภาควิชาวิศวกรรมอิเล็กทรอนิกส์และโทรคมนาคม" },
+    { email: "thanakorn.s@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "ภาควิชาวิศวกรรมอิเล็กทรอนิกส์และโทรคมนาคม" },
+    { email: "kawita.c@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "reviewer_ภาควิชาวิศวกรรมวัสดุและโลหการ" },
+    { email: "phornwalan.n@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "ภาควิชาวิศวกรรมวัสดุและโลหการ" },
+    { email: "manop.y@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "reviewer_ภาควิชาวิศวกรรมเครื่องกล" },
+    { email: "manusak.t@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "ภาควิชาวิศวกรรมเครื่องกล" },
+    { email: "saowaluk.t@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "ภาควิชาวิศวกรรมเครื่องกล" },
+    { email: "sirichai.t@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "reviewer_ภาควิชาวิศวกรรมคอมพิวเตอร์" },
+    { email: "pauline.k@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "ภาควิชาวิศวกรรมคอมพิวเตอร์" },
+    { email: "nitikorn.j@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "reviewer_ภาควิชาวิศวกรรมไฟฟ้า" },
+    { email: "krit.k@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "ภาควิชาวิศวกรรมไฟฟ้า" },
+    { email: "nitikorn.j@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "ภาควิชาวิศวกรรมไฟฟ้า" },
+    { email: "porakoch.s@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "reviewer_ภาควิชาวิศวกรรมอุตสาหการ" },
+    { email: "chawalit.i@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "ภาควิชาวิศวกรรมอุตสาหการ" },
+    { email: "chonticha.p@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "ภาควิชาวิศวกรรมอุตสาหการ" },
+    { email: "areeya.t@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "reviewer_ภาควิชาวิศวกรรมสิ่งทอ" },
+    { email: "phansupa.c@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "ภาควิชาวิศวกรรมสิ่งทอ" },
+    { email: "jaturong@exchange.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "reviewer_ภาควิชาวิศวกรรมเกษตร" },
+    { email: "grianggai.s@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "ภาควิชาวิศวกรรมเกษตร" },
+    { email: "Prueksa.s@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "reviewer_ภาควิชาวิศวกรรมเกษตร" },
+    { email: "kirana.s@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "ภาควิชาวิศวกรรมเกษตร" },
+    { email: "sukunya_w@rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "ภาควิชาวิศวกรรมเกษตร" },
+    { email: "Pitchayapatchaya.s@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "งานแผนและงบประมาณ" },
+    { email: "laddawan.s@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "reviewer_งานแผนและงบประมาณ" },
+    { email: "panrawee.r@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "admin" },
+    { email: "pipat.rgb@gmail.com", used: false, invitedAt: new Date(), roleName: "admin" },
+    { email: "shamblesxd@gmail.com", used: false, invitedAt: new Date(), roleName: "ภาควิชาวิศวกรรมเกษตร" },
+    { email: "shamblesxd3@gmail.com", used: false, invitedAt: new Date(), roleName: "reviewer_งานแผนและงบประมาณ" },
+  ];
+  
+  
+  const roleMap = new Map<string, number>();
+  const allRoles = await prisma.role.findMany();
+  allRoles.forEach(role => roleMap.set(role.name, role.id));
+
+  for (const invite of invites) {
+    const roleId = roleMap.get(invite.roleName);
+    if (!roleId) {
+      console.warn(`❌ ไม่พบ role: ${invite.roleName}`);
+      continue;
+    }
+
+    await prisma.invite.upsert({
+      where: { email: invite.email },
+      update: {},
+      create: {
+        email: invite.email,
+        roleId,
+        used: invite.used,
+        invitedAt: invite.invitedAt,
+      },
     });
   }
 

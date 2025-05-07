@@ -12,6 +12,7 @@ model Role {
   name       String       @unique
   users      User[]
   formAccess FormAccess[]
+  Invite     Invite[]
 }
 
 model User {
@@ -23,6 +24,8 @@ model User {
   roleId      Int
   submissions FormSubmission[] // ✅ เพิ่มความสัมพันธ์กลับไปยัง FormSubmission
   ExportLog   ExportLog[]
+  resetToken        String?  @unique
+  resetTokenExpiry  DateTime?
 }
 
 model Form {
@@ -33,6 +36,7 @@ model Form {
   access      FormAccess[]
   submissions FormSubmission[]
   ExportLog   ExportLog[]
+  invites     Invite[]
 }
 
 model FormAccess {
@@ -50,7 +54,7 @@ model FormSubmission {
   formId          Int
   userId          Int
   quarter         Int
-  year            Int      @default(2025)  // ✅ เพิ่ม default
+  year            Int      @default(2025) // ✅ เพิ่ม default
   status          String   @default("Submitted")
   answers         Json
   lastSubmittedAt DateTime @default(now())
@@ -64,9 +68,28 @@ model ExportLog {
   id         Int      @id @default(autoincrement())
   userId     Int
   formId     Int
-  year       Int?      // ✅ เพิ่ม year
+  year       Int? // ✅ เพิ่ม year
   exportedAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
   form Form @relation(fields: [formId], references: [id])
+}
+
+model Invite {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  role      Role     @relation(fields: [roleId], references: [id])
+  roleId    Int
+  used      Boolean  @default(false)
+  invitedAt DateTime @default(now())
+  Form      Form?    @relation(fields: [formId], references: [id])
+  formId    Int?
+}
+
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
 }
