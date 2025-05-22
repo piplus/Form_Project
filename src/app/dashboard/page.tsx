@@ -76,22 +76,30 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <nav className="bg-white shadow px-6 py-3 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <Image src="/LOGO 2.png" alt="Logo" width={120} height={0} />
+      <nav className="bg-white shadow-sm px-6 py-3 flex items-center justify-between border-b">
+        {/* Logo + Slogan */}
+        <div className="flex items-center gap-3">
+          <Image src="/LOGO 2.png" alt="Logo" width={100} height={30} />
+          <p className="text-sm text-gray-600 hidden sm:block ml-5">
+            อีเก็บ – เก็บให้ครบ ไม่หลง ไม่ลืม ไม่พลาดข้อมูลสำคัญ
+          </p>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-600 hidden sm:block">
+
+        {/* User Info & Logout */}
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-700 hidden sm:block">
             👋 {session?.user?.name} ({session?.user?.role})
           </span>
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+            className="px-3 py-1.5 bg-red-500 text-white text-sm rounded hover:bg-red-600 transition"
           >
             Logout
           </button>
         </div>
       </nav>
+
+
 
       <main className="p-6 md:p-10">
         <div className="flex justify-end mb-4">

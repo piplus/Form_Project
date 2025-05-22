@@ -20,11 +20,6 @@ interface SubmissionResponse {
   answers: string;
 }
 
-interface FormSubmissionData {
-  questions: { id: string; label: string; type: string; children?: any[] }[];
-  responses: SubmissionResponse[];
-}
-
 export default function ReviewerDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -40,30 +35,28 @@ export default function ReviewerDashboard() {
       router.push("/login");
       return;
     }
-  
+
     async function fetchForms() {
       if (!session?.user?.role) return;
-  
+
       try {
         const res = await fetch(`/api/reviewer/forms?role=${session.user.role}`);
         if (!res.ok) throw new Error("Failed to fetch forms");
-  
+
         const data = await res.json();
         const sorted = [...data].sort((a, b) =>
           a.file.localeCompare(b.file, undefined, { numeric: true })
         );
         setForms(sorted);
-  
-        // ✅ ดึง search ที่เคยค้นหาไว้
+
         const savedSearch = localStorage.getItem("reviewer-search") || "";
         setSearch(savedSearch);
-  
+
         const filtered = sorted.filter((f) =>
           f.file.toLowerCase().includes(savedSearch.toLowerCase())
         );
         setFilteredForms(filtered);
-  
-        // ✅ โหลดปีที่เคยเลือกไว้โดยอิงจาก userId
+
         const savedYear = localStorage.getItem(`reviewer-year-${session.user.id}`);
         if (savedYear) {
           setSelectedYear(Number(savedYear));
@@ -74,30 +67,28 @@ export default function ReviewerDashboard() {
         setLoading(false);
       }
     }
-  
+
     if (status === "authenticated") fetchForms();
   }, [status, session, router]);
-  
-  
 
   const exportToExcel = async (formId: number, formFile: string) => {
     try {
       const res = await fetch(`/api/reviewer/forms/${formId}/export?year=${selectedYear}`, {
         method: "GET",
       });
-  
+
       if (!res.ok) throw new Error("Failed to export Excel");
-  
+
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
-  
+
       const link = document.createElement("a");
       link.href = url;
       link.setAttribute("download", `${formFile}_${selectedYear}.xlsx`);
       document.body.appendChild(link);
       link.click();
       link.remove();
-  
+
       await fetch(`/api/reviewer/forms/${formId}/export-log?year=${selectedYear}`, {
         method: "POST",
       });
@@ -105,11 +96,10 @@ export default function ReviewerDashboard() {
       console.error("❌ Error exporting Excel:", error);
     }
   };
-  
 
   const handleSearch = (term: string) => {
     setSearch(term);
-    localStorage.setItem("reviewer-search", term); // ✅ จำ search ไว้
+    localStorage.setItem("reviewer-search", term);
     setFilteredForms(
       forms.filter((f) => f.file.toLowerCase().includes(term.toLowerCase()))
     );
@@ -120,11 +110,21 @@ export default function ReviewerDashboard() {
   return (
     <div className="min-h-screen p-6 md:p-10 bg-gray-100 text-gray-800">
       {/* Header */}
-      <nav className="bg-white shadow-sm rounded-lg px-6 py-4 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+      <nav className="bg-white shadow-sm rounded-lg px-6 py-4 mb-8 flex items-center justify-between">
+        {/* Left: Logo + Title + Slogan */}
         <div className="flex items-center gap-4">
-          <Image src="/LOGO 2.png" alt="E-Kept Logo" width={160} height={0} />
-          <h1 className="text-2xl md:text-3xl font-bold ml-10">Reviewer Dashboard</h1>
+          <Image src="/LOGO 2.png" alt="E-Kept Logo" width={100} height={0} />
+          <div className="flex flex-col">
+            <h1 className="text-xl md:text-2xl font-bold text-gray-800">
+              Reviewer Dashboard
+            </h1>
+            <p className="text-sm text-gray-500">
+              อีเก็บ – เก็บให้ครบ ไม่หลง ไม่ลืม ไม่พลาดข้อมูลสำคัญ
+            </p>
+          </div>
         </div>
+
+        {/* Right: Logout */}
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
           className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
@@ -170,29 +170,59 @@ export default function ReviewerDashboard() {
           ❌ ไม่พบข้อมูลฟอร์มที่คุณค้นหา
         </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredForms.map((form) => (
-            <div
-              key={form.id}
-              className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition p-6 flex flex-col justify-between"
-            >
-              <div>
-                <h2 className="text-lg font-semibold text-blue-700 mb-2">{form.file}</h2>
-                {form.description && (
-                  <p className="text-sm text-gray-500 leading-relaxed mb-4">{form.description}</p>
-                )}
-              </div>
-              <button
-                onClick={() => exportToExcel(form.id, form.file)}
-                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-700 transition"
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          {filteredForms.map((form) => {
+            const isKPI = form.file.includes("KPI");
+            const isKR = form.file.includes("KR");
+
+            const themeColor = isKPI
+              ? "blue"
+              : isKR
+              ? "green"
+              : "gray";
+
+            const bgColor = {
+              blue: "bg-blue-600",
+              green: "bg-green-600",
+              gray: "bg-gray-600",
+            }[themeColor];
+
+            return (
+              <div
+                key={form.id}
+                className="flex flex-col rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 bg-white min-h-[340px]"
               >
-                📤 Export to Excel
-              </button>
-            </div>
-          ))}
+                {/* Top Section: Form Name */}
+                <div className="p-6 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-800 mb-2">
+                      {form.file}
+                    </h2>
+                    {form.description && (
+                      <p className="text-sm text-gray-600">{form.description}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="w-full h-[2px] bg-gray-200" />
+
+                {/* Bottom Section: Export Button */}
+                <div className={`${bgColor} px-6 py-4 text-right`}>
+                  <button
+                    onClick={() => exportToExcel(form.id, form.file)}
+                    className="bg-white text-sm text-gray-800 px-4 py-2 rounded-md font-medium hover:bg-gray-100 transition"
+                  >
+                    📤 Export to Excel
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+
+
         </div>
       )}
     </div>
-
   );
 }
