@@ -32,6 +32,7 @@ model Form {
   id          Int              @id @default(autoincrement())
   file        String           @unique
   description String           @default("")
+  method      String?
   questions   Json
   access      FormAccess[]
   submissions FormSubmission[]

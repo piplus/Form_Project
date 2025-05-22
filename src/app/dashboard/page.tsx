@@ -9,6 +9,7 @@ interface FormData {
   id: number;
   file: string;
   description?: string;
+  method?: string;
   submissions: { year: number; quarter: number }[];
 }
 
@@ -60,7 +61,6 @@ export default function DashboardPage() {
 
   const handleSelectQuarter = (quarter: number) => {
     if (selectedFormId) {
-      // router.push(`/form/${selectedFormId}?quarter=${quarter}`);
       router.push(`/form/${selectedFormId}?quarter=${quarter}&year=${selectedYear}`);
     }
   };
@@ -77,7 +77,6 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-100">
       <nav className="bg-white shadow-sm px-6 py-3 flex items-center justify-between border-b">
-        {/* Logo + Slogan */}
         <div className="flex items-center gap-3">
           <Image src="/LOGO 2.png" alt="Logo" width={100} height={30} />
           <p className="text-sm text-gray-600 hidden sm:block ml-5">
@@ -85,7 +84,6 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        {/* User Info & Logout */}
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-700 hidden sm:block">
             👋 {session?.user?.name} ({session?.user?.role})
@@ -99,15 +97,13 @@ export default function DashboardPage() {
         </div>
       </nav>
 
-
-
       <main className="p-6 md:p-10">
         <div className="flex justify-end mb-4">
-        <select
-          value={selectedYear}
-          onChange={(e) => handleYearChange(parseInt(e.target.value))}
-          className="border rounded-md p-2 text-gray-600"
-        >
+          <select
+            value={selectedYear}
+            onChange={(e) => handleYearChange(parseInt(e.target.value))}
+            className="border rounded-md p-2 text-gray-600"
+          >
             {years.map((year) => (
               <option key={year} value={year}>
                 ปี {year}
@@ -121,9 +117,10 @@ export default function DashboardPage() {
             <table className="w-full table-auto border-collapse">
               <thead className="bg-gray-200">
                 <tr>
-                  <th className="px-4 py-3 text-left text-gray-600">File</th>
-                  <th className="px-4 py-3 text-left text-gray-600">Progress</th>
-                  <th className="px-4 py-3 text-left text-gray-600">Select</th>
+                  <th className="px-4 py-3 text-left text-gray-600 w-1/6">File</th>
+                  <th className="px-2 py-3 text-left text-gray-600 w-1/2">Description</th>
+                  <th className="px-2 py-3 text-left text-gray-600 w-1/4">Progress</th>
+                  <th className="px-2 py-3 text-left text-gray-600 w-1/6">Select</th>
                 </tr>
               </thead>
               <tbody>
@@ -135,20 +132,21 @@ export default function DashboardPage() {
                     <tr key={form.id} className="border-b text-gray-700">
                       <td className="px-4 py-3 flex items-center gap-2">
                         {form.file}
-                        {form.description && (
+                        {form.method && (
                           <div className="relative group">
                             <img
                               src="https://cdn-icons-png.flaticon.com/128/11560/11560440.png"
-                              alt="hint"
+                              alt="method"
                               width={18}
                             />
                             <div className="absolute z-10 top-6 left-0 w-64 p-3 bg-white border border-gray-300 rounded-md shadow-md text-sm text-gray-800 opacity-0 group-hover:opacity-100 transition-opacity">
-                              {form.description}
+                              {form.method}
                             </div>
                           </div>
                         )}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-2 py-3 align-top">{form.description || "-"}</td>
+                      <td className="px-2 py-3">
                         <div className="flex gap-2">
                           {[1, 2, 3, 4].map((q) => (
                             <div
@@ -165,10 +163,10 @@ export default function DashboardPage() {
                           Submitted: {submittedQuarters.length} ครั้ง
                         </div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-2 py-3">
                         <button
                           onClick={() => handleOpenModal(form.id)}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                          className="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition"
                         >
                           Select Form
                         </button>

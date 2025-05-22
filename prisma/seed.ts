@@ -116,6 +116,7 @@ async function main() {
     {
       file: "RT KR 2.1",
       description: "มูลค่าผลกระทบต่อเศรษฐกิจ สังคม และคุณภาพชีวิต ที่เกิดจากการนำผลงานวิจัยและพัฒนานวัตกรรมไปใช้ประโยชน์",
+      method: "online",
       questions: JSON.stringify([
         { id: "q1", label: "ชื่อผลงานวิจัย สิ่งประดิษฐ์ นวัตกรรมหรืองานสร้างสรรค์ถูกนำไปใช้ประโยชน์", type: "text" },
         { id: "q2", label: "ชื่ออาจารย์/นักวิจัย", type: "text" },
@@ -1177,7 +1178,11 @@ async function main() {
   for (const form of forms) {
     await prisma.form.upsert({
       where: { file: form.file },
-      update: {},
+      update: {
+        description: form.description,
+        method: form.method ?? undefined, // เพิ่มเฉพาะเมื่อมี field นี้
+        questions: form.questions,
+      },
       create: form,
     });
   }

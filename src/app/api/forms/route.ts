@@ -11,16 +11,18 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const url = new URL(req.url); // ✅ อ่าน query param
+  const url = new URL(req.url);
   const yearParam = url.searchParams.get("year");
-  const targetYear = parseInt(yearParam || "") || new Date().getFullYear(); // fallback ปีปัจจุบัน
+  const targetYear = parseInt(yearParam || "") || new Date().getFullYear();
 
   const userId = parseInt(session.user.id);
   const role = session.user.role;
 
   const formAccess = await prisma.formAccess.findMany({
     where: { role: { name: role } },
-    include: { form: true },
+    include: {
+      form: true,
+    },
   });
 
   const result = await Promise.all(
@@ -35,11 +37,12 @@ export async function GET(req: Request) {
           quarter: true,
         },
       });
-  
+
       return {
         id: access.form.id,
         file: access.form.file,
         description: access.form.description,
+        method: access.form.method ?? "", // ✅ เพิ่ม method
         submissions,
       };
     })
