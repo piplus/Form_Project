@@ -1,31 +1,11 @@
-import NextAuth, { AuthOptions } from "next-auth";
+import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// ✅ เพิ่ม Custom Type ให้ NextAuth
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string;
-      name: string;
-      email: string;
-      role: string;
-    };
-  }
-
-  interface User {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-  }
-}
-
-// ❌ อย่า export ตรงนี้!
-const authOptions: AuthOptions = {
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -74,6 +54,3 @@ const authOptions: AuthOptions = {
   },
   session: { strategy: "jwt" },
 };
-
-const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };

@@ -1225,9 +1225,6 @@ async function main() {
     { email: "Pitchayapatchaya.s@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "งานแผนและงบประมาณ" },
     { email: "laddawan.s@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "reviewer_งานแผนและงบประมาณ" },
     { email: "panrawee.r@en.rmutt.ac.th", used: false, invitedAt: new Date(), roleName: "admin" },
-    { email: "pipat.rgb@gmail.com", used: false, invitedAt: new Date(), roleName: "admin" },
-    { email: "shamblesxd@gmail.com", used: false, invitedAt: new Date(), roleName: "ภาควิชาวิศวกรรมเกษตร" },
-    { email: "shamblesxd3@gmail.com", used: false, invitedAt: new Date(), roleName: "reviewer_งานแผนและงบประมาณ" },
   ];
   
   

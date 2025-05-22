@@ -4,9 +4,8 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 // ✅ GET: ดึงข้อมูล Submission ของฟอร์มที่ Reviewer สามารถเข้าถึง
-export async function GET(req: Request, context: { params: { formId: string } }) {
+export async function GET(req: Request, context: any) {
   try {
-    // ✅ แก้ไขการดึง formId ให้รองรับ Next.js 15
     const formIdString = context.params?.formId;
     if (!formIdString) {
       return NextResponse.json({ error: "Form ID is required" }, { status: 400 });
@@ -17,7 +16,6 @@ export async function GET(req: Request, context: { params: { formId: string } })
       return NextResponse.json({ error: "Invalid Form ID" }, { status: 400 });
     }
 
-    // ✅ ดึงข้อมูลฟอร์มและคำตอบ
     const form = await prisma.form.findUnique({
       where: { id: formId },
       include: {
@@ -31,17 +29,15 @@ export async function GET(req: Request, context: { params: { formId: string } })
       return NextResponse.json({ error: "Form not found" }, { status: 404 });
     }
 
-    // ✅ ดึง Questions และ Responses
     const questions = JSON.parse(form.questions as string);
     const responses = form.submissions.map((submission) => ({
       user: submission.user.name,
       email: submission.user.email,
       createdAt: submission.createdAt,
-      quarter: submission.quarter, // 👈 เพิ่มตรงนี้
+      quarter: submission.quarter,
       year: submission.year,
       answers: submission.answers,
     }));
-    
 
     return NextResponse.json({ questions, responses });
   } catch (error) {

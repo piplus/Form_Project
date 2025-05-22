@@ -7,7 +7,7 @@ import ExcelJS from "exceljs";
 
 const prisma = new PrismaClient();
 
-export async function GET(req: Request, { params }: { params: { formId: string } }) {
+export async function GET(req: Request, { params }: any) {
   try {
     const formId = Number(params.formId);
     const url = new URL(req.url);

@@ -1,9 +1,11 @@
 "use client";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useState } from "react";
 
-export default function ResetPasswordPage({ params }: { params: { token: string } }) {
+export default function ResetPasswordPage() {
   const router = useRouter();
+  const params = useParams(); // ✅ ดึง [token] จาก URL
+  const token = params.token as string;
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -26,7 +28,7 @@ export default function ResetPasswordPage({ params }: { params: { token: string 
 
     const res = await fetch("/api/auth/reset-password", {
       method: "POST",
-      body: JSON.stringify({ token: params.token, password }),
+      body: JSON.stringify({ token, password }),
       headers: { "Content-Type": "application/json" },
     });
 
