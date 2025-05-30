@@ -24,7 +24,6 @@ export default function DashboardPage() {
 
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
-
   const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
 
   useEffect(() => {
@@ -34,9 +33,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!session?.user?.id) return;
     const savedYear = localStorage.getItem(`dashboard-year-${session.user.id}`);
-    if (savedYear) {
-      setSelectedYear(parseInt(savedYear));
-    }
+    if (savedYear) setSelectedYear(parseInt(savedYear));
   }, [session?.user?.id]);
 
   useEffect(() => {
@@ -76,14 +73,13 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <nav className="bg-white shadow-sm px-6 py-3 flex items-center justify-between border-b">
+      <nav className="bg-white shadow-sm px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between border-b gap-2 sm:gap-0">
         <div className="flex items-center gap-3">
           <Image src="/LOGO 2.png" alt="Logo" width={100} height={30} />
           <p className="text-sm text-gray-600 hidden sm:block ml-5">
             อีเก็บ – เก็บให้ครบ ไม่หลง ไม่ลืม ไม่พลาดข้อมูลสำคัญ
           </p>
         </div>
-
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-700 hidden sm:block">
             👋 {session?.user?.name} ({session?.user?.role})
@@ -97,12 +93,12 @@ export default function DashboardPage() {
         </div>
       </nav>
 
-      <main className="p-6 md:p-10">
+      <main className="p-4 md:p-10">
         <div className="flex justify-end mb-4">
           <select
             value={selectedYear}
             onChange={(e) => handleYearChange(parseInt(e.target.value))}
-            className="border rounded-md p-2 text-gray-600"
+            className="border rounded-md p-2 text-sm text-gray-600"
           >
             {years.map((year) => (
               <option key={year} value={year}>
@@ -113,9 +109,9 @@ export default function DashboardPage() {
         </div>
 
         {forms.length > 0 ? (
-          <div className="bg-white shadow-md rounded-lg overflow-visible">
-            <table className="w-full table-auto border-collapse">
-              <thead className="bg-gray-200">
+          <div className="bg-white shadow-md rounded-lg overflow-x-auto">
+            <table className="w-full min-w-[600px] table-auto border-collapse">
+              <thead className="bg-gray-200 text-xs sm:text-sm">
                 <tr>
                   <th className="px-4 py-3 text-left text-gray-600 w-1/6">File</th>
                   <th className="px-2 py-3 text-left text-gray-600 w-1/2">Description</th>
@@ -129,7 +125,7 @@ export default function DashboardPage() {
                   const submittedQuarters = filtered.map((s) => s.quarter);
 
                   return (
-                    <tr key={form.id} className="border-b text-gray-700">
+                    <tr key={form.id} className="border-b text-gray-700 text-xs sm:text-sm">
                       <td className="px-4 py-3 flex items-center gap-2">
                         {form.file}
                         {form.method && (
@@ -183,10 +179,10 @@ export default function DashboardPage() {
       </main>
 
       {showModal && selectedFormId && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl w-96 p-6 text-center">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 text-center">
             <h2 className="text-xl font-bold mb-4 text-gray-600">เลือกไตรมาสที่จะกรอก</h2>
-            <div className="grid grid-cols-2 gap-4 text-gray-600">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-600">
               {[1, 2, 3, 4].map((q) => {
                 const form = forms.find((f) => f.id === selectedFormId);
                 const isSubmitted =
