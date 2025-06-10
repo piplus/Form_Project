@@ -1,8 +1,8 @@
+// src/app/api/reviewer/forms/[formId]/export/route.ts
 export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import { Buffer as NodeBuffer } from "node:buffer";
 import ExcelJS from "exceljs";
 
 const prisma = new PrismaClient();
@@ -36,7 +36,6 @@ export async function GET(req: Request, { params }: any) {
 
     let responses = form.submissions || [];
 
-    // ✅ Filter by year if provided
     if (yearFilter) {
       const targetYear = parseInt(yearFilter);
       if (!isNaN(targetYear)) {
@@ -47,20 +46,32 @@ export async function GET(req: Request, { params }: any) {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Responses");
 
-    const questionLabels = questions.flatMap((q: any) =>
-      q.type === "group" && q.children
-        ? q.children.map((c: any) => c.label)
+    const flatQuestions = questions.flatMap((q: any) =>
+      q.type === "group" && Array.isArray(q.children)
+        ? q.children.map((c: any) => ({ ...c, groupLabel: q.label }))
+        : [q]
+    );
+
+    const questionLabels = flatQuestions.flatMap((q: any) =>
+      q.type === "date-range"
+        ? [`${q.label} (เริ่ม)`, `${q.label} (สิ้นสุด)`]
         : [q.label]
     );
 
-    const headers = ["User Name", "User Email", "Submitted At", "Quarter", "Year", ...questionLabels];
-    worksheet.addRow(headers);
+    worksheet.addRow([
+      "User Name",
+      "User Email",
+      "Submitted At",
+      "Quarter",
+      "Year",
+      ...questionLabels,
+    ]);
 
     for (let r = 0; r < responses.length; r++) {
       const res = responses[r];
       const parsed = typeof res.answers === "string" ? JSON.parse(res.answers || "{}") : res.answers || {};
 
-      const baseRow = [
+      const rowData = [
         res.user?.name || "",
         res.user?.email || "",
         new Date(res.createdAt).toLocaleString(),
@@ -68,45 +79,30 @@ export async function GET(req: Request, { params }: any) {
         res.year || "",
       ];
 
-      const row = worksheet.addRow([
-        ...baseRow,
-        ...questionLabels.map(() => "")
-      ]);
+     flatQuestions.forEach((q: any) => {
+      if (q.type === "date-range") {
+        const start = parsed[`${q.id}_start`] || parsed[q.id]; // fallback จากข้อมูลเก่า
+        const end = parsed[`${q.id}_end`];
 
-      for (let i = 0; i < questionLabels.length; i++) {
-        const label = questionLabels[i];
-        const id =
-          questions.find((q: any) => q.label === label)?.id ||
-          questions.flatMap((q: any) => q.children || []).find((c: any) => c.label === label)?.id;
-
-        const val = parsed[id] || "";
-        const colIdx = 6 + i;
-
-        if (typeof val === "string" && val.startsWith("data:image")) {
-          const base64 = val.split(",")[1];
-          const ext = val.includes("jpeg") ? "jpeg" : "png";
-          const buffer = Buffer.from(base64, "base64") as unknown as ExcelJS.Buffer;
-
-          const imgId = workbook.addImage({
-            buffer,
-            extension: ext,
-          });
-
-          worksheet.addImage(imgId, {
-            tl: { col: colIdx - 1, row: r + 1 },
-            ext: { width: 100, height: 100 },
-          });
-        } else {
-          let displayVal = val;
-
-          // ✅ ถ้าค่าคือ "อื่น..." ให้ใช้ค่าจาก _etc แทน
-          if (typeof val === "string" && val.startsWith("อื่น") && parsed[`${id}_etc`]) {
-            displayVal = parsed[`${id}_etc`];
-          }
-
-          worksheet.getRow(r + 2).getCell(colIdx).value = displayVal;
+        rowData.push(start || "-");
+        rowData.push(end || "-");
+      } else if (
+        q.type === "file" &&
+        typeof parsed[q.id] === "string" &&
+        parsed[q.id].startsWith("data:image")
+      ) {
+        rowData.push("🖼 แนบไฟล์ภาพ");
+      } else {
+        let val = parsed[q.id] || "-";
+        if (typeof val === "string" && val.startsWith("อื่น") && parsed[`${q.id}_etc`]) {
+          val = parsed[`${q.id}_etc`];
         }
+        rowData.push(val);
       }
+    });
+
+
+      worksheet.addRow(rowData);
     }
 
     const buffer = await workbook.xlsx.writeBuffer();

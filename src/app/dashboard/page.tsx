@@ -41,7 +41,12 @@ export default function DashboardPage() {
       if (!session?.user?.id) return;
       const res = await fetch(`/api/forms?userId=${session.user.id}&year=${selectedYear}`);
       const data = await res.json();
-      setForms(data.error ? [] : data);
+      const sorted = data.error
+        ? []
+        : data.sort((a: FormData, b: FormData) =>
+            a.file.localeCompare(b.file, "th", { sensitivity: "base" }) // สำหรับเรียงตามภาษาไทย/อังกฤษ
+          );
+      setForms(sorted);
       setLoading(false);
     }
 
@@ -109,7 +114,7 @@ export default function DashboardPage() {
         </div>
 
         {forms.length > 0 ? (
-          <div className="bg-white shadow-md rounded-lg overflow-x-auto">
+          <div className="bg-white shadow-md rounded-lg">
             <table className="w-full min-w-[600px] table-auto border-collapse">
               <thead className="bg-gray-200 text-xs sm:text-sm">
                 <tr>
@@ -135,7 +140,7 @@ export default function DashboardPage() {
                               alt="method"
                               width={18}
                             />
-                            <div className="absolute z-10 top-6 left-0 w-64 p-3 bg-white border border-gray-300 rounded-md shadow-md text-sm text-gray-800 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="absolute z-10 top-1 left-full ml-2 w-max max-w-md p-3 bg-white border border-gray-300 rounded-md shadow-lg text-sm text-gray-800 whitespace-pre-wrap break-words opacity-0 group-hover:opacity-100 transition-opacity">
                               {form.method}
                             </div>
                           </div>

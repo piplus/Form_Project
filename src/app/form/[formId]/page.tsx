@@ -17,6 +17,7 @@ export default function FormPage() {
   const searchParams = useSearchParams();
   const quarter = Number(searchParams.get("quarter"));
   const year = Number(searchParams.get("year")) || new Date().getFullYear(); // fallback year
+  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
@@ -254,9 +255,29 @@ export default function FormPage() {
                       }}
                       className="w-full p-2 border rounded"
                     />
+                  ) : q.type === "date-range" ? (
+                    <div className="flex gap-4">
+                      <div className="flex-1">
+                        <label className="block text-sm text-gray-600 mb-1">วันที่เริ่มต้น</label>
+                        <input
+                          type="date"
+                          required
+                          className="w-full p-3 border border-gray-300 rounded-md text-gray-600"
+                          onChange={(e) => handleChange(`${q.id}_start`, e.target.value)}
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <label className="block text-sm text-gray-600 mb-1">วันที่สิ้นสุด</label>
+                        <input
+                          type="date"
+                          required
+                          min={typeof answers[`${q.id}_start`] === "string" ? answers[`${q.id}_start`] as string : today}
+                          className="w-full p-3 border border-gray-300 rounded-md text-gray-600"
+                          onChange={(e) => handleChange(`${q.id}_end`, e.target.value)}
+                        />
+                      </div>
+                    </div>
                   ) : null}
-                  
-                  
                 </>
               )}
             </div>
