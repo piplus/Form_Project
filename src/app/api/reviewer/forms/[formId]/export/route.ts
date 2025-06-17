@@ -1,11 +1,9 @@
-// src/app/api/reviewer/forms/[formId]/export/route.ts
-export const runtime = "nodejs";
-
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import ExcelJS from "exceljs";
 
 const prisma = new PrismaClient();
+export const runtime = "nodejs";
 
 export async function GET(req: Request, { params }: any) {
   try {
@@ -51,6 +49,7 @@ export async function GET(req: Request, { params }: any) {
         ? q.children.map((c: any) => ({ ...c, groupLabel: q.label }))
         : [q]
     );
+    console.log("📄 flatQuestions:", flatQuestions.map((q: any) => q.id));
 
     const questionLabels = flatQuestions.flatMap((q: any) =>
       q.type === "date-range"
@@ -69,9 +68,12 @@ export async function GET(req: Request, { params }: any) {
 
     for (let r = 0; r < responses.length; r++) {
       const res = responses[r];
-      const parsed = typeof res.answers === "string" ? JSON.parse(res.answers || "{}") : res.answers || {};
+      const parsed =
+        typeof res.answers === "string"
+          ? JSON.parse(res.answers || "{}")
+          : res.answers || {};
 
-      const rowData = [
+      const baseRow = [
         res.user?.name || "",
         res.user?.email || "",
         new Date(res.createdAt).toLocaleString(),
@@ -79,30 +81,43 @@ export async function GET(req: Request, { params }: any) {
         res.year || "",
       ];
 
-     flatQuestions.forEach((q: any) => {
-      if (q.type === "date-range") {
-        const start = parsed[`${q.id}_start`] || parsed[q.id]; // fallback จากข้อมูลเก่า
-        const end = parsed[`${q.id}_end`];
+      worksheet.addRow([...baseRow, ...questionLabels.map(() => "")]);
 
-        rowData.push(start || "-");
-        rowData.push(end || "-");
-      } else if (
-        q.type === "file" &&
-        typeof parsed[q.id] === "string" &&
-        parsed[q.id].startsWith("data:image")
-      ) {
-        rowData.push("🖼 แนบไฟล์ภาพ");
-      } else {
-        let val = parsed[q.id] || "-";
-        if (typeof val === "string" && val.startsWith("อื่น") && parsed[`${q.id}_etc`]) {
-          val = parsed[`${q.id}_etc`];
+      for (let i = 0; i < flatQuestions.length; i++) {
+        const q = flatQuestions[i];
+        // const colIdx = 6 + i;
+        const rowIdx = r + 2;
+
+        let colIdx = 6; // คอลัมน์เริ่มต้น
+        for (const q of flatQuestions) {
+          if (q.type === "date-range") {
+            worksheet.getRow(rowIdx).getCell(colIdx).value = parsed[`${q.id}_start`] || parsed[q.id] || "-";
+            worksheet.getRow(rowIdx).getCell(colIdx + 1).value = parsed[`${q.id}_end`] || "-";
+            colIdx += 2;
+          } else if (q.type === "file" && typeof parsed[q.id] === "string" && parsed[q.id].startsWith("data:image")) {
+            // แนบรูป
+            const base64 = parsed[q.id].split(",")[1];
+            const ext = parsed[q.id].includes("jpeg") ? "jpeg" : "png";
+            const buffer = Buffer.from(base64, "base64") as unknown as ExcelJS.Buffer;
+            const imgId = workbook.addImage({ buffer, extension: ext });
+
+            worksheet.addImage(imgId, {
+              tl: { col: colIdx - 1, row: rowIdx - 1 },
+              ext: { width: 100, height: 100 },
+            });
+
+            worksheet.getRow(rowIdx).getCell(colIdx).value = "🖼 แนบไฟล์ภาพ";
+            colIdx += 1;
+          } else {
+            let value = parsed[q.id] ?? "-";
+            if (typeof value === "string" && value.startsWith("อื่น") && parsed[`${q.id}_etc`]) {
+              value = parsed[`${q.id}_etc`];
+            }
+            worksheet.getRow(rowIdx).getCell(colIdx).value = value;
+            colIdx += 1;
+          }
         }
-        rowData.push(val);
       }
-    });
-
-
-      worksheet.addRow(rowData);
     }
 
     const buffer = await workbook.xlsx.writeBuffer();

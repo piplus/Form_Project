@@ -9,15 +9,18 @@ export default function FormPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
+  const searchParams = useSearchParams();
+  const quarter = Number(searchParams.get("quarter"));
+  const year = Number(searchParams.get("year")) || new Date().getFullYear();
+  const from = searchParams.get("from");
+  const safeBackPath = from?.startsWith("/dashboard/") ? from : "/dashboard";
+
+  const today = new Date().toISOString().split("T")[0];
+
   const [form, setForm] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [answers, setAnswers] = useState<{ [key: string]: string | string[] }>({});
   const [imagePreviews, setImagePreviews] = useState<{ [key: string]: string }>({});
-
-  const searchParams = useSearchParams();
-  const quarter = Number(searchParams.get("quarter"));
-  const year = Number(searchParams.get("year")) || new Date().getFullYear(); // fallback year
-  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
@@ -60,7 +63,7 @@ export default function FormPage() {
       const data = await res.json();
       if (res.ok) {
         alert("ส่งข้อมูลฟอร์มเรียบร้อยแล้ว ✅");
-        router.push("/dashboard");
+        router.push(safeBackPath);
       } else {
         alert("❌ เกิดข้อผิดพลาด: " + data.error);
       }
@@ -75,12 +78,12 @@ export default function FormPage() {
         alert("ไฟล์ภาพต้องไม่เกิน 1MB");
         return reject("File too large");
       }
-  
+
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64 = reader.result as string;
         setAnswers((prev) => ({ ...prev, [questionId]: base64 }));
-        setImagePreviews((prev) => ({ ...prev, [questionId]: base64 })); // ✅ เก็บสำหรับ preview
+        setImagePreviews((prev) => ({ ...prev, [questionId]: base64 }));
         resolve();
       };
       reader.onerror = reject;
@@ -91,10 +94,87 @@ export default function FormPage() {
   if (loading) return <p className="text-center mt-10 text-lg">Loading...</p>;
   if (!form) return <p className="text-center mt-10 text-red-500 text-lg">Form not found</p>;
 
+  // return (
+  //   <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-6 py-10">
+  //     <div className="w-full max-w-3xl flex justify-between items-center mb-4">
+        // <h1
+        //   className="text-2xl md:text-4xl font-bold text-gray-800 break-words max-w-[60%] truncate"
+        //   title={form.file}
+        // >
+        //   📋 Form: {form.file}
+        // </h1>
+  //       <div className="text-right text-gray-600 text-lg">
+  //         <div>Quarter: <span className="font-semibold">Q{quarter}</span></div>
+  //         <div>Year: <span className="font-semibold">{year}</span></div>
+  //       </div>
+  //     </div>
+
+  //     <form
+  //       onSubmit={handleSubmit}
+  //       className="w-full max-w-3xl bg-white p-8 rounded-xl shadow-lg space-y-6"
+  //     >
+  //       {form?.questions?.length > 0 ? (
+  //         form.questions.map((q: any) => (
+  //           <div key={q.id} className="space-y-2">
+  //             <label className="block text-lg font-medium text-gray-700">{q.label}</label>
+  //             {/* ตัวอย่าง input text และ radio */}
+  //             {q.type === "text" || q.type === "number" || q.type === "date" ? (
+  //               <input
+  //                 type={q.type}
+  //                 required
+  //                 className="w-full p-4 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-700 text-lg"
+  //                 onChange={(e) => handleChange(q.id, e.target.value)}
+  //               />
+  //             ) : q.type === "radio" ? (
+  //               <div className="flex flex-wrap gap-6 mt-2 text-gray-700">
+  //                 {q.options.map((option: string) => (
+  //                   <div key={option} className="flex items-center gap-2">
+  //                     <input
+  //                       type="radio"
+  //                       required
+  //                       name={q.id}
+  //                       value={option}
+  //                       onChange={(e) => handleChange(q.id, e.target.value)}
+  //                       checked={answers[q.id] === option}
+  //                     />
+  //                     <label>{option}</label>
+  //                   </div>
+  //                 ))}
+  //               </div>
+  //             ) : null}
+  //           </div>
+  //         ))
+  //       ) : (
+  //         <p className="text-red-500 text-lg">No questions available</p>
+  //       )}
+
+  //       <p className="text-red-500 text-lg">หากไม่มีข้อมูล กรุณาใส่เครื่องหมาย -</p>
+  //       <button
+  //         type="submit"
+  //         className="w-full bg-blue-600 text-white text-lg py-3 rounded-md hover:bg-blue-700 transition shadow-md"
+  //       >
+  //         Submit Form
+  //       </button>
+  //     </form>
+
+  //     <button
+  //       onClick={() => router.push(safeBackPath)}
+  //       className="mt-6 px-6 py-3 text-lg bg-gray-500 text-white rounded-md hover:bg-gray-600 transition"
+  //     >
+  //       ⬅ Back to Dashboard
+  //     </button>
+  //   </div>
+  // );
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-6 py-10">
       <div className="w-full max-w-3xl flex justify-between items-center mb-4">
-        <h1 className="text-4xl font-bold text-gray-800">📋 Form: {form.file}</h1>
+        <h1
+          className="text-2xl md:text-4xl font-bold text-gray-800 break-words max-w-[60%] truncate"
+          title={form.file}
+        >
+          📋 Form: {form.file}
+        </h1>
         <div className="text-right text-gray-600 text-lg">
           <div>Quarter: <span className="font-semibold">Q{quarter}</span></div>
           <div>Year: <span className="font-semibold">{year}</span></div>
@@ -110,10 +190,10 @@ export default function FormPage() {
             <div key={q.id} className="space-y-2">
               {q.type === "group" ? (
                 <fieldset className="border border-gray-300 p-4 rounded-md">
-                  <legend className="text-lg font-semibold text-gray-700">{q.label}</legend>
+                  <legend className="text-lg font-semibold text-gray-700 whitespace-pre-wrap">{q.label}<hr></hr></legend>
                   {q.children?.map((qChild: any) => (
                     <div key={qChild.id} className="mt-4">
-                      <label className="block text-md font-medium text-gray-600 mb-1">
+                      <label className="whitespace-pre-line block text-md font-medium text-gray-600 mb-1 ">
                         {qChild.label}
                       </label>
 
@@ -178,7 +258,8 @@ export default function FormPage() {
                 </fieldset>
               ) : (
                 <>
-                  <label className="block text-lg font-medium text-gray-700">{q.label}</label>
+                  <label className="block text-lg font-medium text-gray-700 whitespace-pre-wrap">{q.label}</label>
+                  
                   {q.type === "text" || q.type === "number" || q.type === "date" ? (
                   <input
                     type={q.type}
@@ -253,7 +334,7 @@ export default function FormPage() {
                           await handleFileUpload(q.id, e.target.files[0]);
                         }
                       }}
-                      className="w-full p-2 border rounded"
+                      className="w-full p-2 border rounded text-gray-600"
                     />
                   ) : q.type === "date-range" ? (
                     <div className="flex gap-4">
@@ -296,7 +377,7 @@ export default function FormPage() {
       </form>
 
       <button
-        onClick={() => router.push("/dashboard")}
+        onClick={() => router.push(safeBackPath)}
         className="mt-6 px-6 py-3 text-lg bg-gray-500 text-white rounded-md hover:bg-gray-600 transition"
       >
         ⬅ Back to Dashboard

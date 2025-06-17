@@ -31,7 +31,7 @@ model User {
 model Form {
   id          Int              @id @default(autoincrement())
   file        String           @unique
-  description String           @default("")
+  description String           @db.Text
   method      String?          @db.Text
   questions   Json
   access      FormAccess[]

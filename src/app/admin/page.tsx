@@ -101,14 +101,14 @@ export default function AdminDashboard() {
           <button
             key={item.label}
             onClick={() => router.push(item.path)}
-            className="px-4 py-2 bg-indigo-300 text-white rounded-lg hover:bg-indigo-700 transition"
+            className="px-4 py-2 rounded-xl bg-blue-300 text-white text-sm font-medium shadow-md hover:bg-blue-600 hover:shadow-lg transition-transform transform hover:-translate-y-0.5"
           >
             {item.label}
           </button>
         ))}
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+          className="px-4 py-2 rounded-xl bg-red-300 text-white text-sm font-medium shadow-md hover:bg-red-600 hover:shadow-lg transition-transform transform hover:-translate-y-0.5"
         >
           🚪 Logout
         </button>
@@ -270,7 +270,7 @@ export default function AdminDashboard() {
 
                     <button
                       onClick={() => assignSelectedForms(role.id)}
-                      className="mt-2 w-70 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                      className="mt-2 w-70 px-4 py-2 bg-blue-300 text-white rounded-md shadow-md hover:bg-blue-600 hover:shadow-lg transition-transform transform hover:-translate-y-0.5"
                     >
                       + Assign Selected
                     </button>

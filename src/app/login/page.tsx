@@ -19,8 +19,8 @@ export default function LoginPage() {
     if (session?.user?.role) {
       const role = session.user.role;
       if (role === "admin") router.push("/admin");
-      else if (role.startsWith("reviewer")) router.push("/reviewer-dashboard");
-      else router.push("/dashboard");
+      else if (role.startsWith("reviewer")) router.push("/reviewer-dashboard/kpi-kr");
+      else router.push("/dashboard/kpi-kr");
     }
   }, [session, router]);
 
@@ -47,9 +47,9 @@ export default function LoginPage() {
       if (role === "admin") {
         router.push("/admin");
       } else if (role?.startsWith("reviewer")) {
-        router.push("/reviewer-dashboard");
+        router.push("/reviewer-dashboard/kpi-kr");
       } else {
-        router.push("/dashboard");
+        router.push("/dashboard/kpi-kr");
       }
     } catch (error) {
       console.error("❌ Error fetching session:", error);

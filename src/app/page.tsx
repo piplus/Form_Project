@@ -19,9 +19,9 @@ export default function Home() {
       if (role === "admin") {
         router.push("/admin");
       } else if (role?.startsWith("reviewer")) {
-        router.push("/reviewer-dashboard");
+        router.push("/reviewer-dashboard/kpi-kr");
       } else {
-        router.push("/dashboard");
+        router.push("/dashboard/kpi-kr");
       }
     }
   }, [status, session, router]);
