@@ -25,6 +25,7 @@ export default function ReviewerDashboard({ filter }: ReviewerDashboardProps) {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [modalForm, setModalForm] = useState<Form | null>(null);
+  const [exportingFormId, setExportingFormId] = useState<number | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -69,6 +70,9 @@ export default function ReviewerDashboard({ filter }: ReviewerDashboardProps) {
   }, [status, session, router]);
 
   const exportToExcel = async (formId: number, formFile: string) => {
+    if (exportingFormId !== null) return; // ❌ ถ้ากำลัง export อันใดอันหนึ่งอยู่
+
+    setExportingFormId(formId); // ✅ จำว่าอันไหนกำลัง export
     try {
       const res = await fetch(`/api/reviewer/forms/${formId}/export?year=${selectedYear}`);
       if (!res.ok) throw new Error("Failed to export Excel");
@@ -88,8 +92,12 @@ export default function ReviewerDashboard({ filter }: ReviewerDashboardProps) {
       });
     } catch (error) {
       console.error("❌ Error exporting Excel:", error);
+      alert("เกิดข้อผิดพลาดระหว่าง Export");
+    } finally {
+      setExportingFormId(null); // ✅ เคลียร์สถานะ
     }
   };
+
 
   const handleSearch = (term: string) => {
     setSearch(term);
@@ -225,9 +233,14 @@ export default function ReviewerDashboard({ filter }: ReviewerDashboardProps) {
                 <div className={`${bgColor} px-6 py-4 text-right`}>
                   <button
                     onClick={() => exportToExcel(form.id, form.file)}
-                    className="bg-white text-sm text-gray-800 px-4 py-2 rounded-md hover:bg-gray-100 transition"
+                    disabled={exportingFormId === form.id}
+                    className={`bg-white text-sm px-4 py-2 rounded-md transition ${
+                      exportingFormId === form.id
+                        ? "text-gray-400 bg-gray-100 cursor-not-allowed"
+                        : "text-gray-800 hover:bg-gray-100"
+                    }`}
                   >
-                    📤 Export to Excel
+                    {exportingFormId === form.id ? "📤 กำลัง Export..." : "📤 Export to Excel"}
                   </button>
                 </div>
               </div>

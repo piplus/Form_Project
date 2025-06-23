@@ -6,7 +6,8 @@ export default function SevenDashboard() {
   const filter = useCallback(
     (file: string) =>
       file.includes("7.") ||
-      file.includes("แบบประเมินความพึงพอใจต่อการดำเนินงานด้านเทคโนโลยีสารสนเทศ"),
+      file.includes("แบบประเมิน") ||
+      file.includes("แบบสอบถาม"),
     []
   );
 

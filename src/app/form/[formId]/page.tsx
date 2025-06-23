@@ -14,6 +14,7 @@ export default function FormPage() {
   const year = Number(searchParams.get("year")) || new Date().getFullYear();
   const from = searchParams.get("from");
   const safeBackPath = from?.startsWith("/dashboard/") ? from : "/dashboard";
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -21,18 +22,31 @@ export default function FormPage() {
   const [loading, setLoading] = useState(true);
   const [answers, setAnswers] = useState<{ [key: string]: string | string[] }>({});
   const [imagePreviews, setImagePreviews] = useState<{ [key: string]: string }>({});
+  const [showConsentPopup, setShowConsentPopup] = useState(false);
+  const [consentGiven, setConsentGiven] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
   }, [status]);
 
   useEffect(() => {
-    async function fetchForm() {
+  async function fetchForm() {
       if (!formId) return;
       try {
         const res = await fetch(`/api/forms/${formId}`);
         const data = await res.json();
-        setForm(data.error ? null : data);
+        if (!data.error) {
+          setForm(data);
+
+          // ตรวจสอบชื่อฟอร์ม
+          if (data.file?.startsWith("7.") || data.file?.includes("แบบสอบถาม") || data.file?.includes("แบบประเมิน") ) {
+            setShowConsentPopup(true); // แสดง popup ยืนยันการใช้ข้อมูล
+          } else {
+            setConsentGiven(true); // ผ่านได้เลย
+          }
+        } else {
+          setForm(null);
+        }
       } catch (err) {
         console.error("❌ Error fetching form:", err);
       } finally {
@@ -48,10 +62,14 @@ export default function FormPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isSubmitting) return; // ❌ ป้องกันกดซ้ำระหว่างส่ง
     if (!session?.user?.id) {
       alert("กรุณาเข้าสู่ระบบก่อนส่งฟอร์ม");
       return;
     }
+
+    setIsSubmitting(true); // ✅ เริ่มโหลด
 
     try {
       const res = await fetch(`/api/forms/${formId}/submit`, {
@@ -69,6 +87,9 @@ export default function FormPage() {
       }
     } catch (error) {
       console.error("❌ Error submitting form:", error);
+      alert("เกิดข้อผิดพลาดขณะส่งฟอร์ม");
+    } finally {
+      setIsSubmitting(false); // ✅ หยุดโหลด
     }
   };
 
@@ -94,77 +115,68 @@ export default function FormPage() {
   if (loading) return <p className="text-center mt-10 text-lg">Loading...</p>;
   if (!form) return <p className="text-center mt-10 text-red-500 text-lg">Form not found</p>;
 
-  // return (
-  //   <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-6 py-10">
-  //     <div className="w-full max-w-3xl flex justify-between items-center mb-4">
-        // <h1
-        //   className="text-2xl md:text-4xl font-bold text-gray-800 break-words max-w-[60%] truncate"
-        //   title={form.file}
-        // >
-        //   📋 Form: {form.file}
-        // </h1>
-  //       <div className="text-right text-gray-600 text-lg">
-  //         <div>Quarter: <span className="font-semibold">Q{quarter}</span></div>
-  //         <div>Year: <span className="font-semibold">{year}</span></div>
-  //       </div>
-  //     </div>
+  if (showConsentPopup && !consentGiven) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+        <div className="bg-white rounded-xl shadow-lg p-8 max-w-2xl w-full space-y-6">
+          <h2 className="text-2xl font-bold text-gray-800 leading-snug text-center">
+            ขอความยินยอมในการใช้ข้อมูลสำหรับการประเมิน<br />
+            <span className="text-base font-normal text-gray-600">
+              (ตาม พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562)
+            </span>
+          </h2>
 
-  //     <form
-  //       onSubmit={handleSubmit}
-  //       className="w-full max-w-3xl bg-white p-8 rounded-xl shadow-lg space-y-6"
-  //     >
-  //       {form?.questions?.length > 0 ? (
-  //         form.questions.map((q: any) => (
-  //           <div key={q.id} className="space-y-2">
-  //             <label className="block text-lg font-medium text-gray-700">{q.label}</label>
-  //             {/* ตัวอย่าง input text และ radio */}
-  //             {q.type === "text" || q.type === "number" || q.type === "date" ? (
-  //               <input
-  //                 type={q.type}
-  //                 required
-  //                 className="w-full p-4 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-700 text-lg"
-  //                 onChange={(e) => handleChange(q.id, e.target.value)}
-  //               />
-  //             ) : q.type === "radio" ? (
-  //               <div className="flex flex-wrap gap-6 mt-2 text-gray-700">
-  //                 {q.options.map((option: string) => (
-  //                   <div key={option} className="flex items-center gap-2">
-  //                     <input
-  //                       type="radio"
-  //                       required
-  //                       name={q.id}
-  //                       value={option}
-  //                       onChange={(e) => handleChange(q.id, e.target.value)}
-  //                       checked={answers[q.id] === option}
-  //                     />
-  //                     <label>{option}</label>
-  //                   </div>
-  //                 ))}
-  //               </div>
-  //             ) : null}
-  //           </div>
-  //         ))
-  //       ) : (
-  //         <p className="text-red-500 text-lg">No questions available</p>
-  //       )}
+          <div className="space-y-4 text-gray-700 leading-relaxed text-md">
+            <p>
+              ระบบ <strong>E-GEB</strong> เป็นแพลตฟอร์มสำหรับการบริหารจัดการข้อมูลอย่างมีหลักฐานและเป็นระบบ
+              พัฒนาโดย ฝ่ายบริหารและวางแผน คณะวิศวกรรมศาสตร์ (2025)
+              เพื่อสนับสนุนการบริหารจัดการข้อมูลที่สำคัญให้เป็นไปอย่างมีประสิทธิภาพ
+              ทั้งในด้านการบริหารจัดการทั่วไปและการดำเนินงานด้านประกันคุณภาพการศึกษา (EdPEx)
+            </p>
+            <p>
+              ผู้ใช้งานทุกท่านจำเป็นต้องเข้าสู่ระบบเพื่อยืนยันตัวตนในการเข้าถึงระบบ
+              แต่ข้อมูลที่ท่านกรอกในส่วนของการประเมินจะถูกจัดเก็บเป็นความลับ
+              และจะไม่ถูกเชื่อมโยงกับตัวตนของผู้ใช้งานแต่ละราย
+            </p>
+            <p>
+              ข้อมูลจากแบบประเมินจะถูกใช้เพื่อการวิเคราะห์ ปรับปรุงการดำเนินงาน
+              และการประเมินผลในภาพรวมของหน่วยงาน
+              โดยไม่มีการเปิดเผยข้อมูลส่วนบุคคลหรือเชื่อมโยงผลการประเมินกลับไปยังบุคคลใดบุคคลหนึ่ง
+            </p>
+            <p>
+              ระบบ E-GEB มีมาตรการด้านความปลอดภัยในการจัดเก็บและปกป้องข้อมูล
+              ตามที่กฎหมาย PDPA กำหนด
+              เพื่อให้ท่านมั่นใจได้ว่าข้อมูลของท่านจะถูกใช้เฉพาะตามวัตถุประสงค์ที่แจ้งไว้เท่านั้น
+            </p>
+          </div>
 
-  //       <p className="text-red-500 text-lg">หากไม่มีข้อมูล กรุณาใส่เครื่องหมาย -</p>
-  //       <button
-  //         type="submit"
-  //         className="w-full bg-blue-600 text-white text-lg py-3 rounded-md hover:bg-blue-700 transition shadow-md"
-  //       >
-  //         Submit Form
-  //       </button>
-  //     </form>
+          <div className="flex items-start space-x-3 pt-4">
+            <input
+              type="checkbox"
+              id="consentCheckbox"
+              checked={consentGiven}
+              onChange={(e) => setConsentGiven(e.target.checked)}
+              className="mt-1 h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="consentCheckbox" className="text-gray-700 text-md">
+              ข้าพเจ้ายินยอมให้ระบบ E-GEB ใช้ข้อมูลจากแบบประเมินตามวัตถุประสงค์ที่ระบุไว้ โดยไม่มีการเปิดเผยข้อมูลส่วนบุคคลของข้าพเจ้า
+            </label>
+          </div>
 
-  //     <button
-  //       onClick={() => router.push(safeBackPath)}
-  //       className="mt-6 px-6 py-3 text-lg bg-gray-500 text-white rounded-md hover:bg-gray-600 transition"
-  //     >
-  //       ⬅ Back to Dashboard
-  //     </button>
-  //   </div>
-  // );
+          <div className="flex justify-end space-x-4 pt-6">
+            <button
+              onClick={() => router.push(safeBackPath)}
+              className="inline-flex items-center justify-center px-5 py-2.5 text-md font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 hover:text-black transition"
+            >
+              ยกเลิก
+            </button>
+            
+          </div>
+        </div>
+      </div>
+    );
+  }
+
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-6 py-10">
@@ -358,7 +370,20 @@ export default function FormPage() {
                         />
                       </div>
                     </div>
-                  ) : null}
+                  ) : q.type === "link" ? (
+                    <a
+                      href={q.value || "#"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 underline hover:text-blue-800"
+                    >
+                      {q.value}
+                    </a>
+                  ) : q.type === "label" ? (
+                      <p className="text-md text-gray-700 whitespace-pre-wrap">
+                        {q.value}
+                      </p> 
+                  ) : null }
                 </>
               )}
             </div>
@@ -370,9 +395,12 @@ export default function FormPage() {
         <p className="text-red-500 text-lg">หากไม่มีข้อมูล กรุณาใส่เครื่องหมาย -</p>  
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white text-lg py-3 rounded-md hover:bg-blue-700 transition shadow-md"
+          disabled={isSubmitting}
+          className={`w-full text-white text-lg py-3 rounded-md transition shadow-md ${
+            isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+          }`}
         >
-          Submit Form
+          {isSubmitting ? "กำลังส่งข้อมูล..." : "Submit Form"}
         </button>
       </form>
 
