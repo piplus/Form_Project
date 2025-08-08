@@ -11,5 +11,5 @@ export default function SevenDashboard() {
     []
   );
 
-  return <DashboardTemplate filter={filter} />;
+  return <DashboardTemplate filter={filter} fixedQuarter={1} />;
 }

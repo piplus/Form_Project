@@ -93,6 +93,7 @@ export default function AdminDashboard() {
       <div className="flex gap-3">
         {[
           { label: "📈 Summary Graph", path: "/admin/roles/summary" },
+          { label: "👥 Form Manage", path: "/admin/manage" },
           { label: "👥 Users", path: "/admin/users" },
           { label: "🛡️ Roles", path: "/admin/roles" },
           { label: "📧 Invites", path: "/admin/invites" },

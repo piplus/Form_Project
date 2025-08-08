@@ -57,9 +57,10 @@ export async function GET(req: Request, { params }: any) {
         : [q.label]
     );
 
+    const isAnonymousForm = form.file.includes("แบบสอบถาม") || form.file.includes("แบบประเมิน");
+
     worksheet.addRow([
-      "User Name",
-      "User Email",
+      ...(isAnonymousForm ? [] : ["User Name", "User Email"]),
       "Submitted At",
       "Quarter",
       "Year",
@@ -74,8 +75,7 @@ export async function GET(req: Request, { params }: any) {
           : res.answers || {};
 
       const baseRow = [
-        res.user?.name || "",
-        res.user?.email || "",
+        ...(isAnonymousForm ? [] : [res.user?.name || "", res.user?.email || ""]),
         new Date(res.createdAt).toLocaleString(),
         `Q${res.quarter || ""}`,
         res.year || "",

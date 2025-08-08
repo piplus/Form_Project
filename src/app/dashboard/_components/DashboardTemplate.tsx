@@ -13,7 +13,12 @@ interface FormData {
   submissions: { year: number; quarter: number }[];
 }
 
-export default function DashboardTemplate({ filter }: { filter: (file: string) => boolean }) {
+  interface DashboardTemplateProps {
+    filter: (file: string) => boolean;
+    fixedQuarter?: number; // <- เพิ่มตรงนี้
+  }
+
+export default function DashboardTemplate({ filter, fixedQuarter }: DashboardTemplateProps) {
   const { data: session, status } = useSession();
   const router = useRouter();
 
@@ -57,8 +62,14 @@ export default function DashboardTemplate({ filter }: { filter: (file: string) =
   }, [session, status, selectedYear]);
 
   const handleOpenModal = (formId: number) => {
-    setSelectedFormId(formId);
-    setShowModal(true);
+    if (fixedQuarter) {
+      router.push(
+        `/form/${formId}?quarter=${fixedQuarter}&year=${selectedYear}&from=${encodeURIComponent(pathname)}`
+      );
+    } else {
+      setSelectedFormId(formId);
+      setShowModal(true);
+    }
   };
 
   const handleSelectQuarter = (quarter: number) => {
@@ -75,6 +86,7 @@ export default function DashboardTemplate({ filter }: { filter: (file: string) =
       localStorage.setItem(`dashboard-year-${session.user.id}`, year.toString());
     }
   };
+
 
   if (loading) return <p className="text-center mt-10">Loading...</p>;
 
@@ -170,7 +182,7 @@ export default function DashboardTemplate({ filter }: { filter: (file: string) =
                         <td className="whitespace-pre-line px-2 py-3 align-top">{form.description || "-"}</td>
                         <td className="px-2 py-3">
                           <div className="flex gap-2">
-                            {[1, 2, 3, 4].map((q) => (
+                            {(fixedQuarter ? [fixedQuarter] : [1, 2, 3, 4]).map((q) => (
                               <div
                                 key={q}
                                 className={`w-6 h-6 rounded-full ${
@@ -204,7 +216,7 @@ export default function DashboardTemplate({ filter }: { filter: (file: string) =
           )}
         </main>
   
-        {showModal && selectedFormId && (
+        {!fixedQuarter && showModal && selectedFormId && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
             <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 text-center">
               <h2 className="text-xl font-bold mb-4 text-gray-600">เลือกไตรมาสที่จะกรอก</h2>

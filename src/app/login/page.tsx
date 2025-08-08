@@ -123,9 +123,9 @@ export default function LoginPage() {
             </a>
           </p>
           <p className="text-sm text-gray-500 text-center">
-            Forgot Password?{" "}
+            Reset Password?{" "}
             <a href="/forgot-password" className="font-medium text-blue-600 hover:underline">
-              Forgot password
+              Reset password
             </a>
           </p>
         </div>

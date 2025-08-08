@@ -30,7 +30,22 @@ export async function PATCH(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  const { id } = await req.json();
-  await prisma.user.delete({ where: { id } });
-  return NextResponse.json({ success: true });
+  try {
+    const { id } = await req.json();
+
+    // ลบข้อมูลที่เกี่ยวข้องกับ user ก่อน
+    await prisma.formSubmission.deleteMany({ where: { userId: id } });
+    await prisma.exportLog.deleteMany({ where: { userId: id } });
+
+    // ลบ user
+    await prisma.user.delete({ where: { id } });
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error("Error deleting user:", error);
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 }
+    );
+  }
 }

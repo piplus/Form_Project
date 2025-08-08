@@ -39,7 +39,7 @@ export default function FormPage() {
           setForm(data);
 
           // ตรวจสอบชื่อฟอร์ม
-          if (data.file?.startsWith("7.") || data.file?.includes("แบบสอบถาม") || data.file?.includes("แบบประเมิน") ) {
+          if (data.file?.includes("แบบสอบถาม") || data.file?.includes("แบบประเมิน") ) {
             setShowConsentPopup(true); // แสดง popup ยืนยันการใช้ข้อมูล
           } else {
             setConsentGiven(true); // ผ่านได้เลย
